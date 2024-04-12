@@ -1,3 +1,4 @@
+package NeuralNetwork;
 // import java.util.Collections;
 // import java.util.Comparator;
 import java.util.LinkedList;
@@ -10,6 +11,30 @@ public class NueralNetwork {
     LinkedList<Connection> connectionGenes = new LinkedList<>();
     LinkedList<Node_N> nodeGenes = new LinkedList<>();
     Random rand = new Random();
+
+    public LinkedList<LinkedList<Node_N>> getLayers() {
+        return layers;
+    }
+
+    public void setLayers(LinkedList<LinkedList<Node_N>> layers) {
+        this.layers = layers;
+    }
+
+    public LinkedList<Connection> getConnectionGenes() {
+        return connectionGenes;
+    }
+
+    public void setConnectionGenes(LinkedList<Connection> connectionGenes) {
+        this.connectionGenes = connectionGenes;
+    }
+
+    public LinkedList<Node_N> getNodeGenes() {
+        return nodeGenes;
+    }
+
+    public void setNodeGenes(LinkedList<Node_N> nodeGenes) {
+        this.nodeGenes = nodeGenes;
+    }
 
     public NueralNetwork(LinkedList<Node_N> nGenes, LinkedList<Connection> cGenes) {
 
@@ -166,7 +191,24 @@ public class NueralNetwork {
 
     }
 
-    public void getOutputs() {
+    public void setInputs(double[] inputs) {
+
+        if(inputs.length != nodeGenes.size()) return;
+
+        int i = 0;
+
+        for (Node_N node : nodeGenes) {
+
+            node.setInput(inputs[i]);
+            i++;
+
+        }
+
+    }
+
+    public double[] getOutputs() {
+
+        double[] outputs = new double[layers.getLast().size()];
     
         for(int i = 0; i < layers.size(); i++) {
 
@@ -193,15 +235,17 @@ public class NueralNetwork {
 
             if(i == layers.size() - 1) {
 
-                for(Node_N n : layers.get(i)) {
+                for(int t = 0; t < layers.get(i).size(); t++) {
 
-                    System.out.println(n.output);
-        
+                    outputs[t] = layers.get(i).get(t).getOutput();
+
                 }
 
             }
 
         }
+
+        return outputs;
 
     }
 

@@ -1,6 +1,11 @@
 import java.util.LinkedList;
 import java.util.Random;
 import javax.swing.*;
+
+import NeuralNetwork.Connection;
+import NeuralNetwork.Node_N;
+import NeuralNetwork.NueralNetwork;
+
 import java.awt.*;
 
 class NeuralNetworkPanel extends JPanel {
@@ -69,8 +74,8 @@ public class App {
 
         Node_N n1 = new Node_N(1, false, true);
         Node_N n2 = new Node_N(2, false, true);
-        n1.input = 3;
-        n2.input = 4;
+        n1.setInput(3);
+        n2.setInput(4);
 
         Node_N n3 = new Node_N(3, true, false);
         Node_N n4 = new Node_N(4, true, false);
@@ -106,12 +111,12 @@ public class App {
 
         NueralNetwork network = new NueralNetwork(n_genes, c_genes);
         network.getOutputs();
-        System.out.println(network.layers.size());
+        System.out.println(network.getLayers().size());
         network.displayStructure();
 
         JFrame frame = new JFrame("Neural Network Structure");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        NeuralNetworkPanel panel = new NeuralNetworkPanel(network.layers);
+        NeuralNetworkPanel panel = new NeuralNetworkPanel(network.getLayers());
         frame.add(panel);
         frame.pack();
         frame.setLocationRelativeTo(null);

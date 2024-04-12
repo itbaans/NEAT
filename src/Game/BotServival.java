@@ -4,10 +4,12 @@ import javax.swing.*;
 
 import org.apache.commons.geometry.euclidean.twod.Vector2D;
 
+import NeuralNetwork.NueralNetwork;
+
 import java.awt.*;
 import java.awt.event.*;
 
-public class SimpleGameEngine extends JPanel implements KeyListener {
+public class BotServival extends JPanel implements KeyListener {
     
     private static final int WIDTH = 500;
     private static final int HEIGHT = 500;
@@ -16,12 +18,16 @@ public class SimpleGameEngine extends JPanel implements KeyListener {
     private static final int DELAY = 10; // milliseconds
     private Map map = new Map(MAP_ROWS, MAP_COLS, 0.08, 0, 0, MAP_COLS - 1, MAP_ROWS - 1);
     Player player = new Player(25, 25);
+    NueralNetwork myNetwork = new NueralNetwork(10, 2);
+    
 
-    public SimpleGameEngine() {
+    public BotServival() {
+
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.BLACK);
         setFocusable(true);
         addKeyListener(this);
+
     }
 
     @Override
@@ -59,7 +65,7 @@ public class SimpleGameEngine extends JPanel implements KeyListener {
                 for(Tile t : tls) {
                     if(t.isCollision()) {
                         if(player.touchesTile(player.pos, player.tracers[i], t.pos.x, t.pos.y, 20)) {
-                            player.whatTracersSee[i][0] = -1;
+                            player.whatTracersSee[0][i] = -1;
                             igotit = true;
                             break;
                         }
@@ -67,8 +73,13 @@ public class SimpleGameEngine extends JPanel implements KeyListener {
                 }
                 if(igotit) break;
             }
-            if(!igotit)  player.whatTracersSee[i][0] = 0;                   
+
+            if(!igotit)  player.whatTracersSee[0][i] = 0;                   
         }
+
+        myNetwork.setInputs(player.whatTracersSee[0]);
+        if(myNetwork.getOutputs()[0] > myNetwork.getOutputs()[1]) player.steerLeft();
+        else player.steerRight();
 
         for(double[] vals : player.whatTracersSee) {
             System.out.println(vals[0]);
@@ -125,7 +136,7 @@ public class SimpleGameEngine extends JPanel implements KeyListener {
             JFrame frame = new JFrame("Simple Game");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
-            frame.add(new SimpleGameEngine(), BorderLayout.CENTER);
+            frame.add(new BotServival(), BorderLayout.CENTER);
             frame.pack();
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);

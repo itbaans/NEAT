@@ -1,3 +1,4 @@
+package NeuralNetwork;
 public class Connection {
     
     int in_id;

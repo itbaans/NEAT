@@ -22,7 +22,7 @@ public class Player {
     double maxForce;
     Color visionCol = new Color(255, 0, 0);
     Vector2D[] tracers = new Vector2D[10];
-    double[][] whatTracersSee = new double[10][2];
+    double[][] whatTracersSee = new double[2][10];
     float angleThreshold = 0.01f;
     
 
@@ -206,7 +206,7 @@ public class Player {
             double x2 = tracers[i].getX();
             double y2 = tracers[i].getY();
             g.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
-            g.drawString(whatTracersSee[i][0]+"", (int) x2 / 3, (int) y2 / 3);
+            g.drawString(whatTracersSee[0][i]+"", (int) x2 / 3, (int) y2 / 3);
         }
     }
 
