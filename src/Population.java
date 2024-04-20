@@ -41,31 +41,103 @@ public class Population {
 
         //4. mutations are done
 
+        updateAllPossibleConnections();
+
         //5. repeat to step 1
 
 
     }
 
-    public void mutateWithConnection(DNA dna) {
+    private DNA mutateWithWeights(DNA dna) {
+
+
+        for(Connection c : dna.c_genes) {
+
+            
+
+
+        }
+
+    }
+
+    private DNA mutateWithNewNode(DNA dna) {
+
+        int new_id = dna.n_genes.size() + 1;
+
+        int randInd = rand.nextInt(dna.c_genes.size());
+
+        Connection randConn = dna.c_genes.get(randInd);
+
+        Connection conn1 = new Connection(randConn.getIn_id(), new_id, rand.nextDouble() * 2 - 1, true, dna.c_genes.size() + 1);
+        Connection conn2 = new Connection(new_id, randConn.getOut_id(), rand.nextDouble() * 2 - 1, true, dna.c_genes.size() + 2);
+        randConn.setEnabled(false);
+
+        dna.n_genes.add(new Node_N(new_id, true, true));
+        dna.c_genes.add(conn1);
+        dna.c_genes.add(conn2);
+
+        return new DNA(dna.n_genes, dna.c_genes);
+
+    }
+
+    private DNA mutateWithConnection(DNA dna) {
+
+        LinkedList<Connection> newConnGenes = dna.c_genes;
 
         Collections.shuffle(connections);
 
+        int ranInd = rand.nextInt(connections.size());
 
+        int in = connections.get(ranInd)[0];
+        int out = connections.get(ranInd)[1];
 
+        Connection newConnection = new Connection(in, out, rand.nextDouble() * 2 - 1, true, dna.c_genes.size() + 1);
+        newConnGenes.add(newConnection);
 
+        if(!isExcessConnection(dna.n_genes.size(), newConnection) && isDisjointConnection(dna.c_genes, newConnection, dna.n_genes.size()) && !checkIfLoopExist(newConnGenes)) {
+           return new DNA(dna.n_genes, newConnGenes);
+        }
+        newConnGenes.remove(newConnection);
+        return null;
+    }
 
+    private boolean isExcessConnection(int maxSize, Connection c) {
+
+        return (c.getIn_id() > maxSize || c.getOut_id() > maxSize);
 
     }
 
-    public void checkIfLoopExist(LinkedList<Connection> conns) {
+    private boolean isDisjointConnection(LinkedList<Connection> conns, Connection c, int maxSize) {
 
-        
+        for (Connection t : conns) {
 
+            if(c.getIn_id() == t.getIn_id() && c.getOut_id() == t.getOut_id()) return false;
+
+        }
+
+        return c.getIn_id() <= maxSize && c.getOut_id() <= maxSize;
 
     }
 
 
-    public void updateAllPossibleConnections() {
+    private boolean checkIfLoopExist(LinkedList<Connection> conns) {
+
+        Graph graph = new Graph();
+
+        for (Connection c : conns) {
+
+            graph.addConnection(c.getIn_id(), c.getOut_id());
+
+        }
+
+        return graph.hasLoop();
+
+    }
+
+
+    private void updateAllPossibleConnections() {
+
+        connections.clear();
 
         ArrayList<Node_N> inputNodes = new ArrayList<>();
         ArrayList<Node_N> hiddenNodes = new ArrayList<>();
@@ -188,6 +260,8 @@ public class Population {
 
 
         }
+
+        updateAllPossibleConnections();
 
     }
 

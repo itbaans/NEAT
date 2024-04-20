@@ -15,7 +15,7 @@ public class Player {
     Vector2D pos;
     Vector2D velocity;
     Vector2D accelaration;
-    double visionRange = 1000;
+    double visionRange = 50;
     double visionAngle = Math.PI;
     int size;
     double maxSpeed;
@@ -206,7 +206,7 @@ public class Player {
             double x2 = tracers[i].getX();
             double y2 = tracers[i].getY();
             g.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
-            g.drawString(whatTracersSee[0][i]+"", (int) x2 / 3, (int) y2 / 3);
+            //g.drawString(whatTracersSee[0][i]+"", (int) x2 / 3, (int) y2 / 3);
         }
     }
 

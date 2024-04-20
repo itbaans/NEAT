@@ -59,6 +59,12 @@ public class BotServival extends JPanel implements KeyListener {
         
         player.update();
 
+        // for(Tile[] tls : map.tiles) {
+        //     for(Tile t : tls) {
+        //         if(player.inVision(t.getPos().x, t.getPos().y) && t.isCollision()) System.out.println("BLACK");
+        //     }
+        // }
+
         for(int i = 0; i < player.tracers.length; i++) {
             boolean igotit = false;
             for(Tile[] tls : map.tiles) {
@@ -77,12 +83,12 @@ public class BotServival extends JPanel implements KeyListener {
             if(!igotit)  player.whatTracersSee[0][i] = 0;                   
         }
 
-        myNetwork.setInputs(player.whatTracersSee[0]);
-        if(myNetwork.getOutputs()[0] > myNetwork.getOutputs()[1]) player.steerLeft();
-        else player.steerRight();
+        // myNetwork.setInputs(player.whatTracersSee[0]);
+        // if(myNetwork.getOutputs()[0] > myNetwork.getOutputs()[1]) player.steerLeft();
+        // else player.steerRight();
 
-        for(double[] vals : player.whatTracersSee) {
-            System.out.println(vals[0]);
+        for(double vals : player.whatTracersSee[0]) {
+            System.out.println(vals);
         }
         System.out.println("--------------");
         //System.out.println(player.pos.getX() +" "+player.pos.getY());
