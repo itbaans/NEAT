@@ -10,6 +10,12 @@ public  class Node_N {
     double input;
     double output;
 
+    @Override
+    public String toString() {
+        return "Node_N [node_id=" + node_id + ", isHiddenInput=" + isHiddenInput + ", isHiddenOutput=" + isHiddenOutput
+                + "]";
+    }
+
     public int getNode_id() {
         return node_id;
     }

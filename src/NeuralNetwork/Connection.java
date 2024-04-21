@@ -7,7 +7,17 @@ public class Connection {
     boolean isEnabled;
     
 
+    @Override
+    public String toString() {
+        return "Connection [in_id=" + in_id + ", out_id=" + out_id + ", wieght=" + wieght + ", isEnabled=" + isEnabled
+                + ", innov=" + innov + "]";
+    }
+
     int innov;
+
+    public int getInnov() {
+        return innov;
+    }
 
     public Connection(int in_id, int out_id, double wieght, boolean isEnabled, int innov) {
         

@@ -142,6 +142,7 @@ public class NueralNetwork {
                     }
 
                     if(allClear) {
+                        removeIfAlreadyInPrevLayers(n);
                         newLayer.add(n);
                     }
                     
@@ -157,6 +158,15 @@ public class NueralNetwork {
         }
 
 
+    }
+
+    private void removeIfAlreadyInPrevLayers(Node_N node) {
+
+        for (int i = 0; i < layers.size(); i++) {
+            if(layers.get(i).contains(node)) layers.get(i).remove(node);
+        }
+
+        
     }
 
     public NueralNetwork(int no_of_inputs, int no_of_outputs) {
