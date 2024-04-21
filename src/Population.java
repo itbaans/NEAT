@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.LinkedList;
 
 import Game.BotServival;
@@ -16,7 +18,7 @@ public class Population {
     int no_of_inputs;
     int no_of_outputs;
     Random rand = new Random();
-    ArrayList<int[]> connections = new ArrayList<>();
+    Hashtable<String, Integer> connections = new Hashtable<>();
     NueralNetwork tesNetwork;
     private int MAX_INNOV_ID;
 
@@ -379,8 +381,8 @@ public class Population {
             for (int j = no_of_inputs + 1; j <= no_of_inputs + no_of_outputs; j++) {
 
                 MAX_INNOV_ID++;
-                int[] t = {i, j, MAX_INNOV_ID};
-                connections.add(t);
+                String con = i+","+j;
+                connections.put(con, MAX_INNOV_ID);
 
             }
 
@@ -424,11 +426,14 @@ public class Population {
                 n_genes.add(new Node_N((o+ 1) + no_of_inputs, true, false));
             }   
 
-            for (int[] c : connections) {
-
-                c_genes.add(new Connection(c[0], c[1], rand.nextDouble() * 2 - 1, true, c[2]));
-
+            Enumeration<String> keys = connections.keys();
+            while(keys.hasMoreElements()) {
+                String key = keys.nextElement();
+                String[] split = key.split(",");
+                c_genes.add(new Connection(Integer.parseInt(split[0]), Integer.parseInt(split[1]), rand.nextDouble() * 2 - 1, true, connections.get(key)));
+                    
             }
+
             
             populationDNAs[p] = new DNA(n_genes, c_genes);
 
