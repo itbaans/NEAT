@@ -18,6 +18,7 @@ public class Population {
     Random rand = new Random();
     ArrayList<int[]> connections = new ArrayList<>();
     NueralNetwork tesNetwork;
+    private int MAX_INNOV_ID;
 
     public Population(int size, int ins, int outs) {
 
@@ -56,8 +57,6 @@ public class Population {
 
         //4. mutations are done
 
-        updateAllPossibleConnections();
-
         //5. repeat to step 1
 
 
@@ -90,7 +89,7 @@ public class Population {
     
             case 2: //new node
                 mutateWithNewNode(populationDNAs[0]);
-                updateAllPossibleConnections(); //this is only done for testing for now
+                updateConnectionsList(pick, pick); //this is only done for testing for now
                 tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
                 //System.out.println(populationDNAs[0].n_genes.size());
                 System.out.println("NEW NODE");
@@ -209,8 +208,17 @@ public class Population {
 
         Connection randConn = dna.c_genes.get(randInd);
 
-        Connection conn1 = new Connection(randConn.getIn_id(), new_id, rand.nextDouble() * 2 - 1, true, dna.c_genes.size() + 1);
-        Connection conn2 = new Connection(new_id, randConn.getOut_id(), rand.nextDouble() * 2 - 1, true, dna.c_genes.size() + 2);
+        MAX_INNOV_ID++;
+        int[] t = {randConn.getIn_id() , new_id, MAX_INNOV_ID};
+        connections.add(t);
+        Connection conn1 = new Connection(randConn.getIn_id(), new_id, rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID);
+
+        MAX_INNOV_ID++;
+        int[] t1 = {new_id , randConn.getIn_id(), MAX_INNOV_ID};
+        connections.add(t1);
+        Connection conn2 = new Connection(new_id, randConn.getOut_id(), rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID);
+
+        updateConnectionsList(new_id, randConn.getIn_id());
         randConn.setEnabled(false);
 
         dna.n_genes.add(new Node_N(new_id, true, true));
@@ -218,6 +226,39 @@ public class Population {
         dna.c_genes.add(conn2);
 
         return;
+
+    }
+
+    private void updateConnectionsList(int newID, int alrSelected) {
+
+        int min = no_of_inputs + no_of_outputs + 1;
+        int max = getMaxGeneID();
+
+        //hiddent to hidden connections
+        for (int j = min; j <= max; j++) {
+
+            if(j != newID && j != alrSelected) {
+
+                MAX_INNOV_ID++;
+                int[] t = {newID, j, MAX_INNOV_ID};
+
+                MAX_INNOV_ID++;
+                int[] t1 = {j, newID, MAX_INNOV_ID};
+
+                connections.add(t);
+                connections.add(t1);
+            }
+
+        }
+
+        //hidden to output connections
+        for (int o = no_of_inputs + 1; o <= no_of_outputs + no_of_inputs; o++) {
+
+            MAX_INNOV_ID++;
+            int[] t = {newID, o, MAX_INNOV_ID};
+            connections.add(t);
+
+        }
 
     }
 
@@ -257,7 +298,7 @@ public class Population {
                 
                 if(!checkIfLoopExist(dna.c_genes, c)) {
 
-                    dna.c_genes.add(new Connection(c[0], c[1], rand.nextDouble() * 2 - 1, true, dna.getMaxConnID() + 1));
+                    dna.c_genes.add(new Connection(c[0], c[1], rand.nextDouble() * 2 - 1, true, c[2]));
                     return;
     
                 }
@@ -330,50 +371,23 @@ public class Population {
     }
 
 
-    private void updateAllPossibleConnections() {
-
-        connections.clear();
-
-        int max = getMaxGeneID();
+    private void initializeAllPossibleConnections() {
 
         for (int i = 1; i <= no_of_inputs; i++) {
 
             //input connections to all possible nodes except other input nodes
-            for (int j = no_of_inputs + 1; j <= max; j++) {
+            for (int j = no_of_inputs + 1; j <= no_of_inputs + no_of_outputs; j++) {
 
-                int[] t = {i, j};
+                MAX_INNOV_ID++;
+                int[] t = {i, j, MAX_INNOV_ID};
                 connections.add(t);
 
             }
 
         }
 
-        int min = no_of_inputs + no_of_outputs + 1;
-
-        for (int i = min; i <= max; i++) {
-
-            //hiddent to hidden connections
-            for (int j = min; j <= max; j++) {
-
-                if(j != i) {
-                    int[] t = {i , j};
-                    connections.add(t);
-                }
-
-            }
-
-            //hidden to output connections
-            for (int o = no_of_inputs + 1; o <= no_of_outputs + no_of_inputs; o++) {
-
-                int[] t = {i , o};
-                connections.add(t);
-
-            }
-
-        }
 
     }
-
 
 
     private int getMaxGeneID() {
@@ -391,38 +405,35 @@ public class Population {
 
     }
 
+    //initializing fully connected genes for first generation
     private void startOfTimes() {
+
+        initializeAllPossibleConnections();
 
         for (int p = 0; p < populationSize; p++) {
 
             LinkedList<Node_N> n_genes = new LinkedList<>();
             LinkedList<Connection> c_genes = new LinkedList<>();
 
-            int connID = 1;
+            for (int i = 0; i < no_of_inputs; i++) {
+                n_genes.add(new Node_N(i + 1, false, true));      
+
+            }
 
             for(int o = 0; o < no_of_outputs; o++) {
                 n_genes.add(new Node_N((o+ 1) + no_of_inputs, true, false));
             }   
 
-            for (int i = 0; i < no_of_inputs; i++) {
+            for (int[] c : connections) {
 
-                n_genes.add(new Node_N(i + 1, false, true));      
-
-                for (int j = 0; j < no_of_outputs; j++) {
-           
-                    c_genes.add(new Connection(i + 1, (j + 1) + no_of_inputs, rand.nextDouble() * 2 - 1, true, connID));
-                    connID++;
-
-                }
+                c_genes.add(new Connection(c[0], c[1], rand.nextDouble() * 2 - 1, true, c[2]));
 
             }
-
+            
             populationDNAs[p] = new DNA(n_genes, c_genes);
 
 
         }
-
-        updateAllPossibleConnections();
 
     }
 
