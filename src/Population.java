@@ -78,42 +78,41 @@ public class Population {
     
         switch (pick) {
             case 0: //change of wieghts
+                System.out.println("WEIGHT CHANGED");
                 mutateWithWeights(populationDNAs[0]);
                 tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
-                System.out.println("WEIGHT CHANGED");
                 tesNetwork.displayStructure();
                 break;
                 
             case 1: //new conn
+                System.out.println("NEW CONNECTION ADDED");
                 mutateWithConnection(populationDNAs[0]);
                 tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
-                //System.out.println(populationDNAs[0].c_genes.size());
-                System.out.println("NEW CONNECTION ADDED");
+                //System.out.println(populationDNAs[0].c_genes.size());               
                 System.out.println("NEW SIZE: "+populationDNAs[0].c_genes.size());
                 tesNetwork.displayStructure();
                 break;
     
             case 2: //new node
+                System.out.println("NEW NODE");
                 mutateWithNewNode(populationDNAs[0]);
-                updateConnectionsList(pick, pick); //this is only done for testing for now
                 tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
                 //System.out.println(populationDNAs[0].n_genes.size());
-                System.out.println("NEW NODE");
                 tesNetwork.displayStructure();
                 break;
     
             case 3: //remove conn
-                mutateWithRemoveConnection(populationDNAs[0]);
-                tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
                 System.out.println("REMOVE CONN");
+                mutateWithRemoveConnection(populationDNAs[0]);
+                tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);                
                 System.out.println("NEW SIZE: "+populationDNAs[0].c_genes.size());
                 tesNetwork.displayStructure();
                 break;
     
             case 4: //remove node
-                mutateWithRemoveNode(populationDNAs[0]);
-                tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
                 System.out.println("REMOVE NODE");
+                mutateWithRemoveNode(populationDNAs[0]);
+                tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);                  
                 tesNetwork.displayStructure();
             }
 
@@ -240,45 +239,17 @@ public class Population {
             connections.put(in+","+newNode.getNode_id(), MAX_INNOV_ID);
         }
 
-        else {
+        else dna.c_genes.add(new Connection(in, newNode.getNode_id(), rand.nextDouble() * 2 - 1, true, id1));
 
-            boolean alrExist = false;
-            for(int i = 0; i < dna.c_genes.size(); i++) {
-                if(dna.c_genes.get(i).getIn_id() == id1) {
-                    dna.c_genes.get(i).setEnabled(true);
-                    alrExist = true;
-                    break;
-                }
-            }
-
-            if(!alrExist) {
-                dna.c_genes.add(new Connection(in, newNode.getNode_id(), rand.nextDouble() * 2 - 1, true, id1));
-            }
-
-        }
 
         if(id2 == null) {
             MAX_INNOV_ID++;
-            dna.c_genes.add(new Connection(in, newNode.getNode_id(), rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID));
+            dna.c_genes.add(new Connection(newNode.getNode_id(), out, rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID));
             connections.put(newNode.getNode_id()+","+out, MAX_INNOV_ID);
         }
 
-        else {
+        else dna.c_genes.add(new Connection(newNode.getNode_id(), out, rand.nextDouble() * 2 - 1, true, id2));
 
-            boolean alrExist = false;
-            for(int i = 0; i < dna.c_genes.size(); i++) {
-                if(dna.c_genes.get(i).getIn_id() == id2) {
-                    dna.c_genes.get(i).setEnabled(true);
-                    alrExist = true;
-                    break;
-                }
-            }
-
-            if(!alrExist) {
-                dna.c_genes.add(new Connection(in, newNode.getNode_id(), rand.nextDouble() * 2 - 1, true, id2));
-            }
-
-        }
 
         dna.n_genes.add(newNode);
 
@@ -291,7 +262,17 @@ public class Population {
         
         if(dna.n_genes.size() <= (no_of_inputs + no_of_outputs)) return;
 
-        
+        int rInd = rand.nextInt(dna.n_genes.size() - (no_of_inputs + no_of_outputs)) + (no_of_inputs + no_of_outputs);
+
+        int delID = dna.n_genes.get(rInd).getNode_id();
+        System.out.println("C_GENES SIZE BFR: "+dna.c_genes.size());
+        dna.c_genes.removeIf(connection -> connection.getIn_id() == delID || connection.getOut_id() == delID);
+        System.out.println("C_GENES SIZE AFTR: "+dna.c_genes.size());
+
+        System.out.println("N_GENES SIZE BFR: "+dna.n_genes.size());
+        dna.n_genes.remove(rInd);
+        System.out.println("N_GENES SIZE AFTR: "+dna.n_genes.size());
+        Collections.sort(dna.n_genes);
 
     }
 
@@ -317,7 +298,7 @@ public class Population {
 
         Node_N n2 = selectedSet[rand.nextInt(selectedSet.length)];
 
-        if(!checkIfLoopExist(dna.c_genes, randKey.getNode_id(), n2.getNode_id())) {
+        if(randKey.isHiddenOutput() && n2.isHiddenInput() && !checkIfLoopExist(dna.c_genes, randKey.getNode_id(), n2.getNode_id())) {
 
             Integer id = connections.get(randKey.getNode_id()+","+n2.getNode_id());
 
@@ -378,7 +359,7 @@ public class Population {
 
         if(start == end) end++;
 
-        for(int i = start; i < end; i++) {
+        for(int i = start; i < end - 1; i++) {
 
             Connection c = dna.getConnection(selectedBranch[i].getNode_id(), selectedBranch[i + 1].getNode_id());
             if(c != null) c.setEnabled(false);

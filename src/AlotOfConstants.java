@@ -13,7 +13,7 @@ public class AlotOfConstants {
     public static double MAX_CLAMP_VALUE = 1;
     public static double MIN_CLAMP_VALUE = -1;
 
-    public static double probNewNode = 0.0;
+    public static double probNewNode = 0.2;
     public static double probRemoveNode = 0.05;
     public static double probNewConn = 0.2;
     public static double probRemoveConn = 0.05;
