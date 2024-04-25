@@ -1,7 +1,7 @@
 package NeuralNetwork;
 import java.util.Hashtable;
 
-public  class Node_N {
+public  class Node_N implements Comparable<Node_N> {
 
     int node_id;
     boolean isHiddenInput;
@@ -14,6 +14,11 @@ public  class Node_N {
     public String toString() {
         return "Node_N [node_id=" + node_id + ", isHiddenInput=" + isHiddenInput + ", isHiddenOutput=" + isHiddenOutput
                 + "]";
+    }
+
+    @Override
+    public int compareTo(Node_N other) {
+        return Integer.compare(this.node_id, other.node_id);
     }
 
     public int getNode_id() {
