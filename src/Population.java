@@ -220,7 +220,6 @@ public class Population {
         connections.add(t1);
         Connection conn2 = new Connection(new_id, randConn.getOut_id(), rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID);
 
-        updateConnectionsList(new_id, randConn.getIn_id());
         randConn.setEnabled(false);
 
         dna.n_genes.add(new Node_N(new_id, true, true));
@@ -231,38 +230,6 @@ public class Population {
 
     }
 
-    private void updateConnectionsList(int newID, int alrSelected) {
-
-        int min = no_of_inputs + no_of_outputs + 1;
-        int max = getMaxGeneID();
-
-        //hiddent to hidden connections
-        for (int j = min; j <= max; j++) {
-
-            if(j != newID && j != alrSelected) {
-
-                MAX_INNOV_ID++;
-                int[] t = {newID, j, MAX_INNOV_ID};
-
-                MAX_INNOV_ID++;
-                int[] t1 = {j, newID, MAX_INNOV_ID};
-
-                connections.add(t);
-                connections.add(t1);
-            }
-
-        }
-
-        //hidden to output connections
-        for (int o = no_of_inputs + 1; o <= no_of_outputs + no_of_inputs; o++) {
-
-            MAX_INNOV_ID++;
-            int[] t = {newID, o, MAX_INNOV_ID};
-            connections.add(t);
-
-        }
-
-    }
 
     private void mutateWithRemoveNode(DNA dna) {
         
@@ -292,23 +259,27 @@ public class Population {
 
     private void mutateWithConnection(DNA dna) {
 
-        Collections.shuffle(connections);
+        Enumeration<String> keys = connections.keys();
+        while(keys.hasMoreElements()) {
 
-        for (int[] c : connections) {
+            String key = keys.nextElement();
+            String[] split = key.split(",");
+            int in = Integer.parseInt(split[0]);
+            int out = Integer.parseInt(split[1]);
 
-            if(isDisjointConnection(dna, c)){
-                
-                if(!checkIfLoopExist(dna.c_genes, c)) {
+            if(!isDisjointConnection(dna, in, out)) {
 
-                    dna.c_genes.add(new Connection(c[0], c[1], rand.nextDouble() * 2 - 1, true, c[2]));
+                if(!checkIfLoopExist(dna.c_genes, in, out)) {
+
+                    dna.c_genes.add(new Connection(in, out, rand.nextDouble() * 2 - 1, true, connections.get(key)));
                     return;
-    
+
                 }
 
             }
 
         }
-     
+
         return;
 
     }
@@ -323,17 +294,17 @@ public class Population {
 
     }
 
-    private boolean isExcessConnection(DNA dna, int[] c) {
+    private boolean isExcessConnection(DNA dna, int in, int out) {
 
-        if(c[0] > dna.getMaxNodeID() || c[1]> dna.getMaxNodeID()) return true;
+        if(in > dna.getMaxNodeID() || out > dna.getMaxNodeID()) return true;
 
         boolean check1 = true;
         boolean check2 = true;
 
         for (Node_N n : dna.n_genes) {
 
-            if(c[0] == n.getNode_id()) check1 = false;
-            if(c[1] == n.getNode_id()) check2 = false;
+            if(in == n.getNode_id()) check1 = false;
+            if(out == n.getNode_id()) check2 = false;
 
             if(!check1 && !check2) return false;
 
@@ -343,24 +314,24 @@ public class Population {
 
     }
 
-    private boolean isDisjointConnection(DNA dna, int[] c) {
+    private boolean isDisjointConnection(DNA dna, int in, int out) {
 
         for (Connection t : dna.c_genes) {
 
-            if(c[0] == t.getIn_id() && c[1] == t.getOut_id()) return false;
+            if(in == t.getIn_id() && out == t.getOut_id()) return false;
 
         }
 
-        return !isExcessConnection(dna, c);
+        return !isExcessConnection(dna, in, out);
 
     }
 
 
-    private boolean checkIfLoopExist(LinkedList<Connection> conns, int[] newConn) {
+    private boolean checkIfLoopExist(LinkedList<Connection> conns, int in, int out) {
 
         Graph graph = new Graph();
 
-        graph.addConnection(newConn[0], newConn[1]);
+        graph.addConnection(in, out);
 
         for (Connection c : conns) {
 
@@ -388,7 +359,6 @@ public class Population {
 
         }
 
-
     }
 
 
@@ -404,7 +374,6 @@ public class Population {
 
         return maxId;
         
-
     }
 
     //initializing fully connected genes for first generation
@@ -437,7 +406,6 @@ public class Population {
             
             populationDNAs[p] = new DNA(n_genes, c_genes);
 
-
         }
 
     }
@@ -466,7 +434,6 @@ class DNA {
 
         return maxId;
 
-
     }
 
     public int getMaxConnID() {
@@ -481,8 +448,6 @@ class DNA {
 
         return maxId;
 
-
     }
-
 
 }
