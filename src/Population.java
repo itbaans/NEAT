@@ -1,12 +1,16 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.List;
 
 import Game.BotServival;
 import NeuralNetwork.Connection;
 import java.util.Random;
+import java.util.Set;
+
 import NeuralNetwork.Node_N;
 import NeuralNetwork.NueralNetwork;
 
@@ -204,52 +208,90 @@ public class Population {
 
     private void mutateWithNewNode(DNA dna) {
 
-        int new_id = dna.getMaxNodeID() + 1;
+        //here i am assuming the dna n genes are sorted according to their ids
+        //also nodes from 0 -> (no of inputs + no of outputs) order is never changed
+        Node_N newNode = null;
 
-        int randInd = rand.nextInt(dna.c_genes.size());
+        for(int i = no_of_inputs + no_of_outputs; i < dna.n_genes.size(); i++) {
 
-        Connection randConn = dna.c_genes.get(randInd);
+            if(dna.n_genes.get(i).getNode_id() > (i + 1)) {
+                
+                newNode = new Node_N(i+1, true, true);
+                break;
 
-        MAX_INNOV_ID++;
-        int[] t = {randConn.getIn_id() , new_id, MAX_INNOV_ID};
-        connections.add(t);
-        Connection conn1 = new Connection(randConn.getIn_id(), new_id, rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID);
+            }
+        }
 
-        MAX_INNOV_ID++;
-        int[] t1 = {new_id , randConn.getIn_id(), MAX_INNOV_ID};
-        connections.add(t1);
-        Connection conn2 = new Connection(new_id, randConn.getOut_id(), rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID);
+        if(newNode == null) newNode = new Node_N(dna.getMaxNodeID() + 1, true, true);
 
-        randConn.setEnabled(false);
+        Connection c = dna.c_genes.get(rand.nextInt(dna.c_genes.size()));
 
-        dna.n_genes.add(new Node_N(new_id, true, true));
-        dna.c_genes.add(conn1);
-        dna.c_genes.add(conn2);
+        int in = c.getIn_id();
+        int out = c.getOut_id();
 
-        return;
+        Integer id1 = connections.get(in+","+newNode.getNode_id());
+        Integer id2 = connections.get(newNode.getNode_id()+","+out);
 
+        c.setEnabled(false);
+
+        if(id1 == null) {
+            MAX_INNOV_ID++;
+            dna.c_genes.add(new Connection(in, newNode.getNode_id(), rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID));
+            connections.put(in+","+newNode.getNode_id(), MAX_INNOV_ID);
+        }
+
+        else {
+
+            boolean alrExist = false;
+            for(int i = 0; i < dna.c_genes.size(); i++) {
+                if(dna.c_genes.get(i).getIn_id() == id1) {
+                    dna.c_genes.get(i).setEnabled(true);
+                    alrExist = true;
+                    break;
+                }
+            }
+
+            if(!alrExist) {
+                dna.c_genes.add(new Connection(in, newNode.getNode_id(), rand.nextDouble() * 2 - 1, true, id1));
+            }
+
+        }
+
+        if(id2 == null) {
+            MAX_INNOV_ID++;
+            dna.c_genes.add(new Connection(in, newNode.getNode_id(), rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID));
+            connections.put(newNode.getNode_id()+","+out, MAX_INNOV_ID);
+        }
+
+        else {
+
+            boolean alrExist = false;
+            for(int i = 0; i < dna.c_genes.size(); i++) {
+                if(dna.c_genes.get(i).getIn_id() == id2) {
+                    dna.c_genes.get(i).setEnabled(true);
+                    alrExist = true;
+                    break;
+                }
+            }
+
+            if(!alrExist) {
+                dna.c_genes.add(new Connection(in, newNode.getNode_id(), rand.nextDouble() * 2 - 1, true, id2));
+            }
+
+        }
+
+        dna.n_genes.add(newNode);
+
+        Collections.sort(dna.n_genes);
+        
     }
 
 
     private void mutateWithRemoveNode(DNA dna) {
         
-        for (int i = 0; i < dna.n_genes.size(); i++) {
-            Node_N node = dna.n_genes.get(i);
+        if(dna.n_genes.size() <= (no_of_inputs + no_of_outputs)) return;
 
-            if(node.isHiddenInput() && node.isHiddenOutput()) {
-
-                int delID = node.getNode_id();
-
-                // Remove the node and its connections
-                dna.n_genes.remove(node);
-                dna.c_genes.removeIf(conn -> conn.getIn_id() == delID || conn.getOut_id() == delID);
-                break;
-
-            }
-
-        }
-
-        return;
+        
 
     }
 
@@ -259,40 +301,137 @@ public class Population {
 
     private void mutateWithConnection(DNA dna) {
 
-        Enumeration<String> keys = connections.keys();
-        while(keys.hasMoreElements()) {
+        Hashtable<Node_N, Set<Node_N>> setsOfUnConnectedNodes = new Hashtable<>();
 
-            String key = keys.nextElement();
-            String[] split = key.split(",");
-            int in = Integer.parseInt(split[0]);
-            int out = Integer.parseInt(split[1]);
+        for (int i = 0; i < no_of_inputs; i++) {
+            setsOfUnConnectedNodes.put(dna.n_genes.get(i), nodesWithNoPathTo(dna.n_genes, dna.n_genes.get(i)));
+        }
 
-            if(!isDisjointConnection(dna, in, out)) {
+        for (int i = no_of_inputs + no_of_outputs; i < dna.n_genes.size(); i++) {
+            setsOfUnConnectedNodes.put(dna.n_genes.get(i), nodesWithNoPathTo(dna.n_genes, dna.n_genes.get(i)));
+        }
 
-                if(!checkIfLoopExist(dna.c_genes, in, out)) {
+        Node_N randKey = getRandomKey(setsOfUnConnectedNodes);
 
-                    dna.c_genes.add(new Connection(in, out, rand.nextDouble() * 2 - 1, true, connections.get(key)));
-                    return;
+        Node_N[] selectedSet = setsOfUnConnectedNodes.get(randKey).toArray(new Node_N[0]);
 
-                }
+        Node_N n2 = selectedSet[rand.nextInt(selectedSet.length)];
+
+        if(!checkIfLoopExist(dna.c_genes, randKey.getNode_id(), n2.getNode_id())) {
+
+            Integer id = connections.get(randKey.getNode_id()+","+n2.getNode_id());
+
+            if(id == null) {
+
+                MAX_INNOV_ID++;
+                dna.c_genes.add(new Connection(randKey.getNode_id(), n2.getNode_id(), rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID));
+                connections.put(randKey.getNode_id()+","+n2.getNode_id(), MAX_INNOV_ID);
 
             }
 
-        }
+            else {
 
+                for(int i = 0; i < dna.c_genes.size(); i++) {
+                    if(dna.c_genes.get(i).getIn_id() == id) {
+                        dna.c_genes.get(i).setEnabled(true);
+                        return;
+                    }
+                }
+
+                dna.c_genes.add(new Connection(randKey.getNode_id(), n2.getNode_id(), rand.nextDouble() * 2 - 1, true, id));
+                
+            }
+
+        }
+        
         return;
 
     }
 
+
+    //testing needed, problems can come if selected branch is empty
     private void mutateWithRemoveConnection(DNA dna) {
 
-        int ind = rand.nextInt(dna.c_genes.size());
+        List<List<Set<Node_N>>> scaryList = new ArrayList<>();
 
-        dna.c_genes.remove(ind);
+        for(Node_N n : dna.n_genes) {
 
-        return;
+            List<Set<Node_N>> branches = new ArrayList<>();
+            branches.add(new HashSet<>());
+            branchDFS(n, new HashSet<>(), branches, 0);
+            scaryList.add(branches);
+
+        }
+
+        List<Set<Node_N>> selectedNodeBranches = scaryList.get(rand.nextInt(scaryList.size()));
+
+        Node_N[] selectedBranch = selectedNodeBranches.get(rand.nextInt(selectedNodeBranches.size())).toArray(new Node_N[0]);
+
+        int start = rand.nextInt(selectedBranch.length);
+        int end = rand.nextInt(selectedBranch.length);
+
+        if(start > end) {
+            int t = start;
+            start = end;
+            end = t;
+        }
+
+        if(start == end) end++;
+
+        for(int i = start; i < end; i++) {
+
+            Connection c = dna.getConnection(selectedBranch[i].getNode_id(), selectedBranch[i + 1].getNode_id());
+            if(c != null) c.setEnabled(false);
+
+        }
 
     }
+
+    private void branchDFS(Node_N node, Set<Node_N> visited, List<Set<Node_N>> branches, int currInd) {
+
+        branches.get(currInd).add(node);
+
+        if (!visited.contains(node)) {
+            visited.add(node);        
+            for (Node_N neighbor : node.getOuts().keySet()) {
+                branchDFS(neighbor, visited, branches, currInd);
+                branches.add(new HashSet<>());
+                currInd++;
+            }
+            
+        }
+    }
+
+    private <K, V> K getRandomKey(Hashtable<K, V> hashtable) {
+        if (hashtable.isEmpty()) {
+            return null;
+        }
+        Random random = new Random();
+        List<K> keys = new ArrayList<>(hashtable.keySet());
+        return keys.get(random.nextInt(keys.size()));
+    }
+
+    private Set<Node_N> nodesWithNoPathTo(LinkedList<Node_N> graph, Node_N node) {
+        Set<Node_N> reachableNodes = new HashSet<>();
+        dfs(node, reachableNodes);
+        Set<Node_N> allNodes = new HashSet<>();
+        for (Node_N n : graph) {
+            allNodes.add(n);
+        }
+        allNodes.remove(node);
+        allNodes.removeAll(reachableNodes);
+        return allNodes;
+    }
+
+    private void dfs(Node_N node, Set<Node_N> visited) {
+        if (!visited.contains(node)) {
+            visited.add(node);
+            for (Node_N neighbor : node.getOuts().keySet()) {
+                dfs(neighbor, visited);
+            }
+        }
+    }
+
 
     private boolean isExcessConnection(DNA dna, int in, int out) {
 
@@ -447,6 +586,29 @@ class DNA {
         }
 
         return maxId;
+
+    }
+
+    public Node_N getNode(int id) {
+        for (Node_N n : n_genes) {
+            if(n.getNode_id() == id) return n;
+        }
+        return null;
+    }
+
+    public Connection getConnection(int in, int out) {
+
+        for (Connection c : c_genes) {
+
+            if(c.getIn_id() == in && c.getOut_id() == out) {
+
+                return c;
+
+            }
+
+        }
+
+        return null;
 
     }
 

@@ -11,11 +11,31 @@ public class Test {
 
         // System.out.println(percentage);
 
-        Population pTest = new Population();
+        // Population pTest = new Population();
 
-        pTest.testMutatingWieghts();
-        //updateAllPossibleConnections();
+        // pTest.testMutatingWieghts();
+        // //updateAllPossibleConnections();
 
+        temp();
+
+    }
+
+    public static void temp() {
+
+        String[] t = {"testing", "1 2 3"};
+
+        for (String s : t) {
+
+            s = s+"p";
+            System.out.println(s);
+
+        }
+
+        for (String s : t) {
+
+            System.out.println(s);
+
+        }
     }
 
     private static void updateAllPossibleConnections() {
