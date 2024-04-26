@@ -254,6 +254,7 @@ public class Population {
         dna.n_genes.add(newNode);
 
         Collections.sort(dna.n_genes);
+        clearNodeOuts(dna.n_genes);
         
     }
 
@@ -273,6 +274,7 @@ public class Population {
         dna.n_genes.remove(rInd);
         System.out.println("N_GENES SIZE AFTR: "+dna.n_genes.size());
         Collections.sort(dna.n_genes);
+        clearNodeOuts(dna.n_genes);
 
     }
 
@@ -297,6 +299,12 @@ public class Population {
         Node_N[] selectedSet = setsOfUnConnectedNodes.get(randKey).toArray(new Node_N[0]);
 
         Node_N n2 = selectedSet[rand.nextInt(selectedSet.length)];
+
+        if(!n2.isHiddenInput() && dna.n_genes.size() > no_of_inputs + no_of_outputs) {
+            while(!n2.isHiddenInput()) {
+                n2 = selectedSet[rand.nextInt(selectedSet.length)];
+            }
+        }
 
         if(randKey.isHiddenOutput() && n2.isHiddenInput() && !checkIfLoopExist(dna.c_genes, randKey.getNode_id(), n2.getNode_id())) {
 
@@ -324,64 +332,48 @@ public class Population {
             }
 
         }
+        clearNodeOuts(dna.n_genes);
         
         return;
 
     }
 
+    private void clearNodeOuts(LinkedList<Node_N> list) {
 
-    //testing needed, problems can come if selected branch is empty
+        for(int i = 0; i < list.size(); i++) {
+            list.get(i).clearOuts();
+        }
+    }
+
+
+    //i died here
     private void mutateWithRemoveConnection(DNA dna) {
 
-        List<List<Set<Node_N>>> scaryList = new ArrayList<>();
+        // Hashtable<Node_N, Set<Node_N>> setsOfReacableNodes = new Hashtable<>();
 
-        for(Node_N n : dna.n_genes) {
+        // for (int i = 0; i < no_of_inputs; i++) {
+        //     setsOfReacableNodes.put(dna.n_genes.get(i), getReachableNodes(dna.n_genes, dna.n_genes.get(i)));
+        // }
 
-            List<Set<Node_N>> branches = new ArrayList<>();
-            branches.add(new HashSet<>());
-            branchDFS(n, new HashSet<>(), branches, 0);
-            scaryList.add(branches);
+        // for (int i = no_of_inputs + no_of_outputs; i < dna.n_genes.size(); i++) {
+        //     setsOfReacableNodes.put(dna.n_genes.get(i), getReachableNodes(dna.n_genes, dna.n_genes.get(i)));
+        // }
 
-        }
+        // Node_N randKey = getRandomKey(setsOfReacableNodes);
 
-        List<Set<Node_N>> selectedNodeBranches = scaryList.get(rand.nextInt(scaryList.size()));
+        // Node_N[] selectedSet = setsOfReacableNodes.get(randKey).toArray(new Node_N[0]);
 
-        Node_N[] selectedBranch = selectedNodeBranches.get(rand.nextInt(selectedNodeBranches.size())).toArray(new Node_N[0]);
+        // Node_N n2 = selectedSet[rand.nextInt(selectedSet.length)];
 
-        int start = rand.nextInt(selectedBranch.length);
-        int end = rand.nextInt(selectedBranch.length);
 
-        if(start > end) {
-            int t = start;
-            start = end;
-            end = t;
-        }
+        //this need more finese because removal of connection can result in isolated nodes
+        Connection c = dna.c_genes.get(rand.nextInt(dna.c_genes.size()));
+        if(c!=null) dna.c_genes.remove(c);
 
-        if(start == end) end++;
-
-        for(int i = start; i < end - 1; i++) {
-
-            Connection c = dna.getConnection(selectedBranch[i].getNode_id(), selectedBranch[i + 1].getNode_id());
-            if(c != null) c.setEnabled(false);
-
-        }
+        clearNodeOuts(dna.n_genes);
 
     }
 
-    private void branchDFS(Node_N node, Set<Node_N> visited, List<Set<Node_N>> branches, int currInd) {
-
-        branches.get(currInd).add(node);
-
-        if (!visited.contains(node)) {
-            visited.add(node);        
-            for (Node_N neighbor : node.getOuts().keySet()) {
-                branchDFS(neighbor, visited, branches, currInd);
-                branches.add(new HashSet<>());
-                currInd++;
-            }
-            
-        }
-    }
 
     private <K, V> K getRandomKey(Hashtable<K, V> hashtable) {
         if (hashtable.isEmpty()) {
@@ -393,8 +385,7 @@ public class Population {
     }
 
     private Set<Node_N> nodesWithNoPathTo(LinkedList<Node_N> graph, Node_N node) {
-        Set<Node_N> reachableNodes = new HashSet<>();
-        dfs(node, reachableNodes);
+        Set<Node_N> reachableNodes = getReachableNodes(graph, node);
         Set<Node_N> allNodes = new HashSet<>();
         for (Node_N n : graph) {
             allNodes.add(n);
@@ -402,6 +393,12 @@ public class Population {
         allNodes.remove(node);
         allNodes.removeAll(reachableNodes);
         return allNodes;
+    }
+
+    private Set<Node_N> getReachableNodes(LinkedList<Node_N> graph, Node_N node) {
+        Set<Node_N> reachableNodes = new HashSet<>();
+        dfs(node, reachableNodes);
+        return reachableNodes;
     }
 
     private void dfs(Node_N node, Set<Node_N> visited) {

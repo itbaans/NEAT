@@ -15,8 +15,8 @@ public class AlotOfConstants {
 
     public static double probNewNode = 0.2;
     public static double probRemoveNode = 0.05;
-    public static double probNewConn = 0.2;
-    public static double probRemoveConn = 0.05;
+    public static double probNewConn = 0.05;
+    public static double probRemoveConn = 0.2;
     public static double probChangeWieght = 0.5;
 
 

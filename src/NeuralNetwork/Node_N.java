@@ -16,6 +16,10 @@ public  class Node_N implements Comparable<Node_N> {
                 + "]";
     }
 
+    public void clearOuts() {
+        outs.clear();
+    }
+
     @Override
     public int compareTo(Node_N other) {
         return Integer.compare(this.node_id, other.node_id);

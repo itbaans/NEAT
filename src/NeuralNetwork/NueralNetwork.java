@@ -163,7 +163,10 @@ public class NueralNetwork {
     private void removeIfAlreadyInPrevLayers(Node_N node) {
 
         for (int i = 0; i < layers.size(); i++) {
-            if(layers.get(i).contains(node)) layers.get(i).remove(node);
+            if(layers.get(i).contains(node)) {
+                layers.get(i).remove(node);
+                break;
+            }
         }
 
         
