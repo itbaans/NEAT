@@ -365,14 +365,27 @@ public class Population {
 
         // Node_N n2 = selectedSet[rand.nextInt(selectedSet.length)];
 
-
+        System.out.println("C_GENES SIZE BFR: "+dna.c_genes.size());
         //this need more finese because removal of connection can result in isolated nodes
         Connection c = dna.c_genes.get(rand.nextInt(dna.c_genes.size()));
-        if(c!=null) dna.c_genes.remove(c);
+        Graph g = new Graph();
+
+        for (Connection con : dna.c_genes) {
+            if(con != c) {
+                g.addConnection(con.getIn_id(), con.getOut_id());
+            }
+        }
+
+        if(g.isConnectedGraph()) {
+            if(c!=null) dna.c_genes.remove(c);
+        }
+
+        System.out.println("C_GENES SIZE AFTR: "+dna.c_genes.size());
 
         clearNodeOuts(dna.n_genes);
 
     }
+
 
 
     private <K, V> K getRandomKey(Hashtable<K, V> hashtable) {
