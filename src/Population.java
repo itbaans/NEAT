@@ -386,6 +386,21 @@ public class Population {
 
     }
 
+    public void printConnectionList() {
+
+        // Get an enumeration of the key-value pairs
+        Enumeration<String> keys = connections.keys();
+
+        // Iterate over the key-value pairs
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            Integer value = connections.get(key);
+
+            System.out.println("Key: " + key + ", Value: " + value);
+        }
+
+    }
+
 
 
     private <K, V> K getRandomKey(Hashtable<K, V> hashtable) {

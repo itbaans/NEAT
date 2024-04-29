@@ -78,10 +78,12 @@ public class GraphicalObjectsDisplay extends JFrame {
 
         // Create buttons
         JButton button1 = new JButton("MUTATE");
+        JButton button2 = new JButton("get the connection list");
 
         // Add buttons and display panel to the frame
         add(displayPanel, BorderLayout.CENTER);
         add(button1, BorderLayout.NORTH);
+        add(button2, BorderLayout.SOUTH);
 
          // Add action listeners to buttons
         button1.addActionListener(new ActionListener() {
@@ -91,6 +93,14 @@ public class GraphicalObjectsDisplay extends JFrame {
                 tesPopulation.testMutatingWieghts();
                 layers = tesPopulation.tesNetwork.getLayers();
                 repaint();
+            }
+        });
+
+        button2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Add functionality for button 1 click here
+                tesPopulation.printConnectionList();
             }
         });
 
