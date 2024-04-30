@@ -9,6 +9,38 @@ public  class Node_N implements Comparable<Node_N> {
     Hashtable<Node_N, Double> outs = new Hashtable<>();
     double input;
     double output;
+    double bias;
+ 
+
+    public Node_N(int id, boolean h_i, boolean h_o) {
+
+        node_id = id;
+        isHiddenInput = h_i;
+        isHiddenOutput = h_o;
+
+    }
+
+    public double getConnectionWeight(Node_N node) {
+        if(outs.get(node) != null) return outs.get(node);
+        else return 0;
+    }
+
+
+    public void setConnection(Node_N outNode, double wieght) {
+
+        outs.put(outNode, wieght);
+
+    }
+
+    public void activateNode() {
+        output = activation(input);
+    }
+
+    public double activation(double x) {
+
+        return 1 / (1 + Math.exp(-(x + bias)));
+
+    }
 
     @Override
     public String toString() {
@@ -73,34 +105,12 @@ public  class Node_N implements Comparable<Node_N> {
         this.output = output;
     }
 
-    public Node_N(int id, boolean h_i, boolean h_o) {
-
-        node_id = id;
-        isHiddenInput = h_i;
-        isHiddenOutput = h_o;
-
+    public double getBias() {
+        return bias;
     }
 
-    public double getConnectionWeight(Node_N node) {
-        if(outs.get(node) != null) return outs.get(node);
-        else return 0;
-    }
-
-
-    public void setConnection(Node_N outNode, double wieght) {
-
-        outs.put(outNode, wieght);
-
-    }
-
-    public void activateNode() {
-        output = activation(input);
-    }
-
-    public double activation(double x) {
-
-        return 1 / (1 + Math.exp(-x));
-
+    public void setBias(double bias) {
+        this.bias = bias;
     }
 
 

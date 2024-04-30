@@ -1,12 +1,15 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import Game.BotServival;
+import Game.MadeForNeat;
 import NeuralNetwork.Connection;
 import java.util.Random;
 import java.util.Set;
@@ -16,7 +19,7 @@ import NeuralNetwork.NueralNetwork;
 
 public class Population {
 
-    BotServival[] games;
+    MadeForNeat[] games;
     int populationSize;
     DNA[] populationDNAs;
     int no_of_inputs;
@@ -25,6 +28,7 @@ public class Population {
     Hashtable<String, Integer> connections = new Hashtable<>();
     NueralNetwork tesNetwork;
     private int MAX_INNOV_ID;
+    private Map<DNA, Map<DNA, Double>> distances = new HashMap<>();
 
     public Population(int size, int ins, int outs) {
 
@@ -57,7 +61,7 @@ public class Population {
 
         //1. loop to give dnas to games
 
-        //2. games are played
+        //2. games are played (for some amount of time)
 
         //3. cross overs are donee 
 
@@ -79,7 +83,7 @@ public class Population {
         switch (pick) {
             case 0: //change of wieghts
                 System.out.println("WEIGHT CHANGED");
-                mutateWithWeights(populationDNAs[0]);
+                mutateWithWeightsAndBiases(populationDNAs[0]);
                 tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
                 tesNetwork.displayStructure();
                 break;
@@ -129,12 +133,15 @@ public class Population {
 
     }
 
-    private void mutateWithWeights(DNA dna) {
+    private void mutateWithWeightsAndBiases(DNA dna) {
 
+        //3 choices, pick 1 randomly
         int randomNumber = rand.nextInt(3) + 1;
 
         //shuffling because i want to pick first n random connections.
         Collections.shuffle(dna.c_genes);
+        Collections.shuffle(dna.n_genes);
+
         double[] percentages = {5, 15, 25, 50, 75};
 
         //here higher percentages have more chance to be picked
@@ -142,8 +149,10 @@ public class Population {
 
         //ranging it further
         percentage = rand.nextDouble() * ((percentage + 25) - percentage) + percentage;
-
+        //n is for connection list
         int n = (int)Math.ceil(dna.c_genes.size() * (percentage / 100));
+        //n2 is for nodes list
+        int n2 = (int)Math.ceil(dna.n_genes.size() * (percentage / 100));
 
         n = (n == 0) ? 1 : n;
 
@@ -154,11 +163,13 @@ public class Population {
                 for (int i = 0; i < n; i++) {
 
                     if(AlotOfConstants.isUNIFORM) {
-                        //max min
+
                         double change = rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
                         change = rand.nextDouble() < 0.5 ? -change : change;
                         double value = dna.c_genes.get(i).getWieght() + change;
                         dna.c_genes.get(i).setWieght(clamp(value, AlotOfConstants.MIN_CLAMP_VALUE, AlotOfConstants.MAX_CLAMP_VALUE));
+
+
                     }
                     else {
                         //mean std dev
@@ -166,6 +177,38 @@ public class Population {
                         change = rand.nextDouble() < 0.5 ? -change : change;
                         double value = dna.c_genes.get(i).getWieght() + change;
                         dna.c_genes.get(i).setWieght(clamp(value, AlotOfConstants.MIN_CLAMP_VALUE, AlotOfConstants.MAX_CLAMP_VALUE));
+                        
+                    }
+
+                }
+
+                for (int i = 0; i < n2; i++) {
+
+                    if(AlotOfConstants.isUNIFORM) {
+
+                        if(dna.n_genes.get(i).isHiddenInput()) {
+
+                            double change = rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
+                            change = rand.nextDouble() < 0.5 ? -change : change;
+                            double value = dna.n_genes.get(i).getBias() + change;
+                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_CLAMP_VALUE, AlotOfConstants.MAX_CLAMP_VALUE));
+
+
+                        }
+
+
+                    }
+                    else {
+                        
+                        if(dna.n_genes.get(i).isHiddenInput()) {
+
+                            double change = rand.nextGaussian() * AlotOfConstants.GUASIAN_STD + AlotOfConstants.GUASIAN_MEAN;
+                            change = rand.nextDouble() < 0.5 ? -change : change;
+                            double value = dna.n_genes.get(i).getBias() + change;
+                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_CLAMP_VALUE, AlotOfConstants.MAX_CLAMP_VALUE));
+
+                        }
+                        
                     }
 
                 }
@@ -182,6 +225,13 @@ public class Population {
 
                 }
 
+                for (int i = 0; i < n2; i++) {
+
+                    double scale = rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
+                    if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(dna.n_genes.get(i).getBias() * scale);
+
+                }
+
                 break;
 
             case 3 : //reset weights
@@ -192,6 +242,8 @@ public class Population {
                 n = (int)Math.ceil(dna.c_genes.size() * (percentage / 100));
                 n = (n == 0) ? 1 : n;
 
+                n2 = (int)Math.ceil(dna.n_genes.size() * (percentage / 100));
+                n2 = (n2 == 0) ? 1 : n2;
 
                 for (int i = 0; i < n; i++) {
 
@@ -199,8 +251,15 @@ public class Population {
 
                 }
 
+                for (int i = 0; i < n2; i++) {
+
+                    if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(rand.nextDouble() * 2 - 1);
+
+                }
+
         }
 
+        Collections.sort(dna.n_genes);
         return;
         
     }
@@ -264,8 +323,35 @@ public class Population {
         if(dna.n_genes.size() <= (no_of_inputs + no_of_outputs)) return;
 
         int rInd = rand.nextInt(dna.n_genes.size() - (no_of_inputs + no_of_outputs)) + (no_of_inputs + no_of_outputs);
-
         int delID = dna.n_genes.get(rInd).getNode_id();
+
+        Graph g = new Graph();
+        Set<Integer> startNodes = new HashSet<>();
+        Set<Integer> outNodes = new HashSet<>();
+
+        for(int i = 1; i <= no_of_inputs; i++) {
+            startNodes.add(i);
+        }
+
+        for(int i = no_of_inputs + 1; i <= no_of_outputs + no_of_inputs; i++) {
+            outNodes.add(i);
+        }
+
+        for (Connection c : dna.c_genes) {
+
+            if(c.getIn_id() != delID && c.getOut_id() != delID) {
+                g.addConnection(c.getIn_id(), c.getOut_id());
+            }           
+
+        }
+
+        if(!g.hasNoIsolatedNodes(startNodes, outNodes)) {
+            Collections.sort(dna.n_genes);
+            clearNodeOuts(dna.n_genes);
+            return;
+        }
+
+        
         System.out.println("C_GENES SIZE BFR: "+dna.c_genes.size());
         dna.c_genes.removeIf(connection -> connection.getIn_id() == delID || connection.getOut_id() == delID);
         System.out.println("C_GENES SIZE AFTR: "+dna.c_genes.size());
@@ -287,11 +373,13 @@ public class Population {
         Hashtable<Node_N, Set<Node_N>> setsOfUnConnectedNodes = new Hashtable<>();
 
         for (int i = 0; i < no_of_inputs; i++) {
-            setsOfUnConnectedNodes.put(dna.n_genes.get(i), nodesWithNoPathTo(dna.n_genes, dna.n_genes.get(i)));
+            Set<Node_N> set = nodesWithNoPathTo(dna.n_genes, dna.n_genes.get(i));
+            if(set.size() > 0) setsOfUnConnectedNodes.put(dna.n_genes.get(i), set);
         }
 
         for (int i = no_of_inputs + no_of_outputs; i < dna.n_genes.size(); i++) {
-            setsOfUnConnectedNodes.put(dna.n_genes.get(i), nodesWithNoPathTo(dna.n_genes, dna.n_genes.get(i)));
+            Set<Node_N> set = nodesWithNoPathTo(dna.n_genes, dna.n_genes.get(i));
+            if(set.size() > 0) setsOfUnConnectedNodes.put(dna.n_genes.get(i), set);
         }
 
         Node_N randKey = getRandomKey(setsOfUnConnectedNodes);
@@ -300,9 +388,14 @@ public class Population {
 
         Node_N n2 = selectedSet[rand.nextInt(selectedSet.length)];
 
+        int count = 0;
+        
         if(!n2.isHiddenInput() && dna.n_genes.size() > no_of_inputs + no_of_outputs) {
-            while(!n2.isHiddenInput()) {
+            while(!n2.isHiddenInput() && count < 100) {
+                randKey = getRandomKey(setsOfUnConnectedNodes);
+                selectedSet = setsOfUnConnectedNodes.get(randKey).toArray(new Node_N[0]);
                 n2 = selectedSet[rand.nextInt(selectedSet.length)];
+                count++;
             }
         }
 
@@ -348,42 +441,45 @@ public class Population {
 
     //i died here
     private void mutateWithRemoveConnection(DNA dna) {
+        int maxAttempts = 100;
+        int attempts = 0;
+        
+        System.out.println("SIZE BFR: "+dna.c_genes.size());
 
-        // Hashtable<Node_N, Set<Node_N>> setsOfReacableNodes = new Hashtable<>();
+        Set<Integer> startNodes = new HashSet<>();
+        Set<Integer> outNodes = new HashSet<>();
 
-        // for (int i = 0; i < no_of_inputs; i++) {
-        //     setsOfReacableNodes.put(dna.n_genes.get(i), getReachableNodes(dna.n_genes, dna.n_genes.get(i)));
-        // }
+        for(int i = 1; i <= no_of_inputs; i++) {
+            startNodes.add(i);
+        }
 
-        // for (int i = no_of_inputs + no_of_outputs; i < dna.n_genes.size(); i++) {
-        //     setsOfReacableNodes.put(dna.n_genes.get(i), getReachableNodes(dna.n_genes, dna.n_genes.get(i)));
-        // }
+        for(int i = no_of_inputs + 1; i <= no_of_outputs + no_of_inputs; i++) {
+            outNodes.add(i);
+        }
+        
 
-        // Node_N randKey = getRandomKey(setsOfReacableNodes);
-
-        // Node_N[] selectedSet = setsOfReacableNodes.get(randKey).toArray(new Node_N[0]);
-
-        // Node_N n2 = selectedSet[rand.nextInt(selectedSet.length)];
-
-        System.out.println("C_GENES SIZE BFR: "+dna.c_genes.size());
-        //this need more finese because removal of connection can result in isolated nodes
-        Connection c = dna.c_genes.get(rand.nextInt(dna.c_genes.size()));
         Graph g = new Graph();
-
         for (Connection con : dna.c_genes) {
-            if(con != c) {
-                g.addConnection(con.getIn_id(), con.getOut_id());
+            if(con.isEnabled()) g.addConnection(con.getIn_id(), con.getOut_id());
+        }
+        
+        while (attempts < maxAttempts) {
+            Connection c = dna.c_genes.get(rand.nextInt(dna.c_genes.size()));
+            
+            g.removeConnection(c.getIn_id(), c.getOut_id());
+            
+            if (g.hasNoIsolatedNodes(startNodes, outNodes)) {
+                dna.c_genes.remove(c);
+                System.out.println("removed");
+                break;
             }
+            
+            g.addConnection(c.getIn_id(), c.getOut_id());
+            attempts++;
         }
 
-        if(g.isConnectedGraph()) {
-            if(c!=null) dna.c_genes.remove(c);
-        }
-
-        System.out.println("C_GENES SIZE AFTR: "+dna.c_genes.size());
-
+        System.out.println("SIZE AFTR: "+dna.c_genes.size());
         clearNodeOuts(dna.n_genes);
-
     }
 
     public void printConnectionList() {
@@ -439,7 +535,7 @@ public class Population {
     }
 
 
-    private boolean isExcessConnection(DNA dna, int in, int out) {
+    private static boolean isExcessConnection(DNA dna, int in, int out) {
 
         if(in > dna.getMaxNodeID() || out > dna.getMaxNodeID()) return true;
 
@@ -459,7 +555,7 @@ public class Population {
 
     }
 
-    private boolean isDisjointConnection(DNA dna, int in, int out) {
+    private static boolean isDisjointConnection(DNA dna, int in, int out) {
 
         for (Connection t : dna.c_genes) {
 
@@ -555,8 +651,69 @@ public class Population {
 
     }
 
+    //private Map<DNA, Map<DNA, Double>> distances = new HashMap<>();
+    //start of speciation
+
+    private void calculateSimilartiyDistances() {
+
+        // Calculate compatibility distance between individuals
+        for (Individual individual1 : population) {
+            Map<Individual, Double> individualDistances = new HashMap<>();
+            for (Individual individual2 : population) {
+                if (individual1 != individual2) {
+                    double distance = calculateCompatibilityDistance(individual1, individual2);
+                    individualDistances.put(individual2, distance);
+                }
+            }
+            distances.put(individual1, individualDistances);
+        }
+
+    }
+
+
+    private double distance(DNA dna1, DNA dna2) {
+
+        Collections.sort(dna1.c_genes);
+        Collections.sort(dna2.c_genes);
+
+        int shorterLength = Math.min(dna1.c_genes.size(), dna2.c_genes.size());
+        int longerLength = Math.max(dna1.c_genes.size(), dna2.c_genes.size());
+
+        double sumOfDifferences = 0;
+        for (int i = 0; i < shorterLength; i++) {
+            if(dna1.c_genes.get(i).getInnov() == dna2.c_genes.get(i).getIn_id()) {
+                sumOfDifferences += Math.abs(dna1.c_genes.get(i).getWieght() - dna2.c_genes.get(i).getWieght());
+            }
+            else {
+                sumOfDifferences += dna1.c_genes.get(i).getWieght() + dna2.c_genes.get(i).getWieght();
+            }
+        }
+
+        if(dna1.c_genes.size() > dna2.c_genes.size()) {
+            for(int i = shorterLength; i < longerLength; i++) {
+                sumOfDifferences += dna1.c_genes.get(i).getWieght();
+            }
+        } else {
+            for(int i = shorterLength; i < longerLength; i++) {
+                sumOfDifferences += dna2.c_genes.get(i).getWieght();
+            }
+        }
+
+        double avgDiff = sumOfDifferences / longerLength;
+
+        
+        
+
+
+
+
+
+    }
+
 
 }
+
+
 
 class DNA {
 

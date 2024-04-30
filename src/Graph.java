@@ -8,10 +8,15 @@ public class Graph {
     }
 
     public void addConnection(int begin, int end) {
+
         if (!graph.containsKey(begin)) {
             graph.put(begin, new ArrayList<>());
         }
+        if (!graph.containsKey(end)) {
+            graph.put(end, new ArrayList<>());
+        }
         graph.get(begin).add(end);
+        
     }
 
     public boolean hasLoop() {
@@ -27,22 +32,81 @@ public class Graph {
         return false;
     }
 
-    public boolean isConnectedGraph() {
-        Set<Integer> visited = new HashSet<>();
-        dfs(graph.keySet().iterator().next(), visited);
-        return visited.size() == graph.size();
-    }
+    // public boolean isConnectedGraph() {
+    //     Set<Integer> visited = new HashSet<>();
+    //     dfs(graph.keySet().iterator().next(), visited);
+    //     return visited.size() == graph.size();
+    // }
 
-    private void dfs(int node, Set<Integer> visited) {
+    // private void dfs(int node, Set<Integer> visited) {
+    //     visited.add(node);
+    //     List<Integer> neighbors = graph.get(node);
+    //     if (neighbors != null) {
+    //         for (Integer neighbor : neighbors) {
+    //             if (!visited.contains(neighbor)) {
+    //                 dfs(neighbor, visited);
+    //             }
+    //         }
+    //     }
+    // }
+
+    public boolean hasNoIsolatedNodes(Set<Integer> startNodes, Set<Integer> outNodes) {
+        
+        Set<Integer> allVisited = new HashSet<>();
+        
+        for (Integer startNode : startNodes) {
+            Set<Integer> visited = new HashSet<>();  
+            dfsTraversal(startNode, visited);
+            allVisited.addAll(visited);
+        }
+            
+        for (Integer node : graph.keySet()) {
+
+            if(startNodes.contains(node)) {
+                if(graph.get(node).isEmpty())
+                    return false;
+            }
+
+            if(outNodes.contains(node)) {
+                if (!allVisited.contains(node)) {
+                    return false; 
+                }
+            }
+            if(!outNodes.contains(node) && !startNodes.contains(node)) {
+                if (!allVisited.contains(node) || graph.get(node).isEmpty()) {
+                    return false; 
+                }
+            }
+            
+        }
+        
+        return true;
+    }
+    
+    private void dfsTraversal(int node, Set<Integer> visited) {
         visited.add(node);
-        List<Integer> neighbors = graph.get(node);
-        if (neighbors != null) {
-            for (Integer neighbor : neighbors) {
+        
+        // Traverse neighbors
+        if (graph.containsKey(node)) {
+            for (int neighbor : graph.get(node)) {
                 if (!visited.contains(neighbor)) {
-                    dfs(neighbor, visited);
+                    dfsTraversal(neighbor, visited);
                 }
             }
         }
+    }
+
+    public void removeConnection(int in, int out) {
+
+        if(graph.containsKey(in)) {
+
+            if(graph.get(in).contains(out)) {
+                graph.get(in).remove((Integer)out);
+                return;
+            }
+
+        }
+
     }
 
     private boolean dfs(int node, Set<Integer> visited, Set<Integer> stack) {
@@ -72,12 +136,32 @@ public class Graph {
     public static void main(String[] args) {
         Graph graph = new Graph();
 
+        graph.addConnection(1, 4);
+        graph.addConnection(1, 5);
         graph.addConnection(1, 6);
-        graph.addConnection(6, 2);
-        graph.addConnection(2, 1);
-        graph.addConnection(5, 7);
+        graph.addConnection(2, 4);
+        graph.addConnection(2, 5);
+        graph.addConnection(2, 6);
+        graph.addConnection(3, 4);
+        graph.addConnection(3, 5);
+        graph.addConnection(3, 6);
+
+        Set<Integer> startNodes = new HashSet<>();
+        Set<Integer> outNodes = new HashSet<>();
+
+        for(int i = 1; i <= 3; i++) {
+            startNodes.add(i);
+        }
+
+        for(int i = 3 + 1; i <= 3 + 3; i++) {
+            outNodes.add(i);
+        }
+        
+        // graph.removeConnection(1, 4);
+        // graph.removeConnection(1, 5);
+        // graph.removeConnection(1, 6);
 
         System.out.println("Has Loop: " + graph.hasLoop()); // Output: true
-        System.out.println("Is Connected Graph: " + graph.isConnectedGraph()); // Output: false
+        System.out.println("Is Connected Graph: " + graph.hasNoIsolatedNodes(startNodes, outNodes)); // Output: false
     }
 }

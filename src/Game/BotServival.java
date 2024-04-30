@@ -9,7 +9,7 @@ import NeuralNetwork.NueralNetwork;
 import java.awt.*;
 import java.awt.event.*;
 
-public class BotServival extends JPanel implements KeyListener {
+public class BotServival extends JPanel implements KeyListener, MadeForNeat {
     
     private static final int WIDTH = 500;
     private static final int HEIGHT = 500;
@@ -18,6 +18,8 @@ public class BotServival extends JPanel implements KeyListener {
     private static final int DELAY = 10; // milliseconds
     private Map map = new Map(MAP_ROWS, MAP_COLS, 0.08, 0, 0, MAP_COLS - 1, MAP_ROWS - 1);
     Player player = new Player(25, 25);
+    
+    //this is temporary
     NueralNetwork myNetwork = new NueralNetwork(10, 2);
     
 
@@ -147,6 +149,11 @@ public class BotServival extends JPanel implements KeyListener {
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
+    }
+
+    @Override
+    public double getFitness() {
+        return myNetwork.getFitness();
     }
 }
 

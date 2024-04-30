@@ -11,30 +11,8 @@ public class NueralNetwork {
     LinkedList<Connection> connectionGenes = new LinkedList<>();
     LinkedList<Node_N> nodeGenes = new LinkedList<>();
     Random rand = new Random();
+    double fitness;
 
-    public LinkedList<LinkedList<Node_N>> getLayers() {
-        return layers;
-    }
-
-    public void setLayers(LinkedList<LinkedList<Node_N>> layers) {
-        this.layers = layers;
-    }
-
-    public LinkedList<Connection> getConnectionGenes() {
-        return connectionGenes;
-    }
-
-    public void setConnectionGenes(LinkedList<Connection> connectionGenes) {
-        this.connectionGenes = connectionGenes;
-    }
-
-    public LinkedList<Node_N> getNodeGenes() {
-        return nodeGenes;
-    }
-
-    public void setNodeGenes(LinkedList<Node_N> nodeGenes) {
-        this.nodeGenes = nodeGenes;
-    }
 
     public NueralNetwork(LinkedList<Node_N> nGenes, LinkedList<Connection> cGenes) {
 
@@ -45,18 +23,46 @@ public class NueralNetwork {
     }
 
     public void displayStructure() {
+
+        double[] outpts = getOutputs();
+
         for (int i = 0; i < layers.size(); i++) {
             System.out.println("Layer " + i + ":");
             LinkedList<Node_N> currentLayer = layers.get(i);
-            for (Node_N node : currentLayer) {
-                System.out.print("  Node " + node.node_id + ": Connected to ");
-                Enumeration<Node_N> keys = node.outs.keys();
-                while(keys.hasMoreElements()) {
-                    Node_N key = keys.nextElement();
-                    System.out.print("Node " + key.node_id + " (Weight: " + node.outs.get(key)+ "), ");
-                    
+
+            if(i == 0) {
+
+                for(int t = 0; t < layers.get(i).size(); t++) {
+
+                    System.out.println(layers.get(i).get(t).node_id+" ---input---> "+layers.get(i).get(t).output);
+
                 }
-                System.out.println();
+
+            }
+
+            if(i < layers.size() - 1) {
+
+                for (Node_N node : currentLayer) {
+
+                    System.out.print("  Node " + node.node_id + ": Connected to ");
+                        Enumeration<Node_N> keys = node.outs.keys();
+                        while(keys.hasMoreElements()) {
+                            Node_N key = keys.nextElement();
+                            System.out.print("Node " + key.node_id + " (Weight: " + node.outs.get(key)+ "), ");
+                            
+                        }
+                        System.out.println();            
+                    }
+
+            }
+
+            if(i == layers.size() - 1) {              
+
+                for (int t = 0; t < outpts.length; t++) {
+
+                    System.out.println(layers.get(i).get(t).node_id +" ---output---> "+outpts[t]);
+                }
+
             }
             System.out.println();
         }
@@ -225,21 +231,21 @@ public class NueralNetwork {
     
         for(int i = 0; i < layers.size(); i++) {
 
-            for(Node_N n : layers.get(i)) {
+            for(int t = 0; t < layers.get(i).size(); t++) {
 
-                if(i > 0) n.activateNode();
-                if(i == 0) n.output = n.input;
-    
+                if(i > 0) layers.get(i).get(t).activateNode();
+                if(i == 0) layers.get(i).get(t).output = layers.get(i).get(t).input; 
+
             }
 
             if(i < layers.size() - 1) {
 
-                for(Node_N n : layers.get(i)) {
+                for(int t = 0; t < layers.get(i).size(); t++) {
 
-                    Enumeration<Node_N> keys = n.outs.keys();
+                    Enumeration<Node_N> keys = layers.get(i).get(t).outs.keys();
                     while(keys.hasMoreElements()) {
                         Node_N key = keys.nextElement();
-                        key.input += n.output * n.outs.get(key);
+                        key.input += layers.get(i).get(t).output * layers.get(i).get(t).outs.get(key);
                     }
     
                 }
@@ -260,6 +266,38 @@ public class NueralNetwork {
 
         return outputs;
 
+    }
+
+    public double getFitness() {
+        return fitness;
+    }
+
+    public void setFitness(double fitness) {
+        this.fitness = fitness;
+    }
+
+    public LinkedList<LinkedList<Node_N>> getLayers() {
+        return layers;
+    }
+
+    public void setLayers(LinkedList<LinkedList<Node_N>> layers) {
+        this.layers = layers;
+    }
+
+    public LinkedList<Connection> getConnectionGenes() {
+        return connectionGenes;
+    }
+
+    public void setConnectionGenes(LinkedList<Connection> connectionGenes) {
+        this.connectionGenes = connectionGenes;
+    }
+
+    public LinkedList<Node_N> getNodeGenes() {
+        return nodeGenes;
+    }
+
+    public void setNodeGenes(LinkedList<Node_N> nodeGenes) {
+        this.nodeGenes = nodeGenes;
     }
 
 
