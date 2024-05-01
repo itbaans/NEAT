@@ -28,8 +28,9 @@ public class Population {
     Hashtable<String, Integer> connections = new Hashtable<>();
     NueralNetwork tesNetwork;
     private int MAX_INNOV_ID;
+    private int SPECIE_ID;
 
-    ArrayList<DNA> species = new ArrayList<>();
+    Map<Integer, Specie> species = new HashMap<>();
 
     public Population(int size, int ins, int outs) {
 
@@ -650,32 +651,100 @@ public class Population {
 
         }
 
+        speciate();
     }
 
-    //private Map<DNA, Map<DNA, Double>> distances = new HashMap<>();
-    //start of speciation
 
-    private void calculateSimilartiyDistances() {
+    //start of speciation
+    private void speciate() {
 
         Map<DNA, Map<DNA, Double>> distances = new HashMap<>();
         // Calculate compatibility distance between individuals
-        for (DNA dna : populationDNAs) {
+        for (int i = 0; i < populationDNAs.length; i++) {
             Map<DNA, Double> individualDistances = new HashMap<>();
-            for (DNA dna2 : populationDNAs) {
-                if (dna != dna2) {
-                    double distance = calculateCompatibilityDistance(dna, dna2);
-                    individualDistances.put(dna2, distance);
+            for (int j = 0; j < populationDNAs.length; j++) {
+                if (populationDNAs[i] != populationDNAs[j]) {
+                    double distance = calculateCompatibilityDistance(populationDNAs[i], populationDNAs[j]);
+                    individualDistances.put(populationDNAs[j], distance);
                 }
             }
-            distances.put(dna, individualDistances);
+            distances.put(populationDNAs[i], individualDistances);
         }
 
-        
-
-
+        for (int i = 0; i < populationDNAs.length; i++) {
+            if(!isAlreadyInSpecies(populationDNAs[i])) {
+                putInSpecie(distances, populationDNAs[i]);
+            }
+        }
 
     }
 
+
+
+    private void putInSpecie(Map<DNA, Map<DNA, Double>> distances, DNA individual) {
+
+        boolean gotIt = false;
+
+        for (Map.Entry<DNA, Map<DNA, Double>> entry : distances.entrySet()) {
+            DNA otherIndividual = entry.getKey();
+            if (otherIndividual != individual) {
+                double distance = distances.get(individual).get(otherIndividual);
+                if (distance < AlotOfConstants.COMP_THRSHOLD) {
+                    gotIt = true;
+                    if(isAlreadyInSpecies(otherIndividual)) {
+                        Integer key = getSpecieKey(otherIndividual);
+                        species.get(key).list.add(individual);
+                    }
+                    else {
+                        SPECIE_ID++;
+                        Specie sp = new Specie();
+                        sp.list.add(otherIndividual);
+                        sp.list.add(individual);
+                        sp.setReprentative();
+                        species.put(SPECIE_ID, sp);
+                    }
+                    return;
+
+                }
+            }
+        }
+
+        if(!gotIt) {
+            SPECIE_ID++;
+            Specie sp = new Specie();
+            sp.list.add(individual);
+            sp.setReprentative();
+            species.put(SPECIE_ID, sp);
+
+        }
+
+    }
+
+    private boolean isAlreadyInSpecies(DNA dna) {
+
+        Set<Integer> keys = species.keySet();
+
+        for(Integer i : keys) {
+
+            if(species.get(i).list.contains(dna)) return true;
+
+        }
+
+        return false;
+    }
+
+    private int getSpecieKey(DNA dna) {
+
+        Set<Integer> keys = species.keySet();
+
+        for(Integer i : keys) {
+
+            if(species.get(i).list.contains(dna)) return i;
+
+        }
+
+        return -1;
+    }
 
     private double calculateCompatibilityDistance(DNA dna1, DNA dna2) {
 
@@ -756,7 +825,17 @@ public class Population {
 
 }
 
+class Specie {
 
+    List<DNA> list = new ArrayList<>();
+    DNA representative;
+
+    public void setReprentative() {
+        representative = list.get(0);
+    }
+
+
+}
 
 class DNA {
 
