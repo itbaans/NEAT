@@ -28,7 +28,8 @@ public class Population {
     Hashtable<String, Integer> connections = new Hashtable<>();
     NueralNetwork tesNetwork;
     private int MAX_INNOV_ID;
-    private Map<DNA, Map<DNA, Double>> distances = new HashMap<>();
+
+    ArrayList<DNA> species = new ArrayList<>();
 
     public Population(int size, int ins, int outs) {
 
@@ -656,22 +657,27 @@ public class Population {
 
     private void calculateSimilartiyDistances() {
 
+        Map<DNA, Map<DNA, Double>> distances = new HashMap<>();
         // Calculate compatibility distance between individuals
-        for (Individual individual1 : population) {
-            Map<Individual, Double> individualDistances = new HashMap<>();
-            for (Individual individual2 : population) {
-                if (individual1 != individual2) {
-                    double distance = calculateCompatibilityDistance(individual1, individual2);
-                    individualDistances.put(individual2, distance);
+        for (DNA dna : populationDNAs) {
+            Map<DNA, Double> individualDistances = new HashMap<>();
+            for (DNA dna2 : populationDNAs) {
+                if (dna != dna2) {
+                    double distance = calculateCompatibilityDistance(dna, dna2);
+                    individualDistances.put(dna2, distance);
                 }
             }
-            distances.put(individual1, individualDistances);
+            distances.put(dna, individualDistances);
         }
+
+        
+
+
 
     }
 
 
-    private double distance(DNA dna1, DNA dna2) {
+    private double calculateCompatibilityDistance(DNA dna1, DNA dna2) {
 
         Collections.sort(dna1.c_genes);
         Collections.sort(dna2.c_genes);
@@ -679,37 +685,74 @@ public class Population {
         int shorterLength = Math.min(dna1.c_genes.size(), dna2.c_genes.size());
         int longerLength = Math.max(dna1.c_genes.size(), dna2.c_genes.size());
 
-        double sumOfDifferences = 0;
-        for (int i = 0; i < shorterLength; i++) {
-            if(dna1.c_genes.get(i).getInnov() == dna2.c_genes.get(i).getIn_id()) {
-                sumOfDifferences += Math.abs(dna1.c_genes.get(i).getWieght() - dna2.c_genes.get(i).getWieght());
+        Connection[][] sideByside = new Connection[shorterLength+longerLength][2];
+        int ind = 0;
+
+        for (Connection c : dna1.c_genes) {
+            boolean found = false;
+            for (Connection c2 : dna2.c_genes) {
+                if (c.getInnov() == c2.getInnov()) {
+                    sideByside[ind][0] = c;
+                    sideByside[ind][1] = c2;
+                    found = true;
+                    break;
+                }
             }
-            else {
-                sumOfDifferences += dna1.c_genes.get(i).getWieght() + dna2.c_genes.get(i).getWieght();
+            if (!found) {
+                sideByside[ind][0] = c;
+                sideByside[ind][1] = null;
             }
+            ind++;
+        }
+        
+        for (Connection c2 : dna2.c_genes) {
+            boolean found = false;
+            for (Connection c : dna1.c_genes) {
+                if (c.getInnov() == c2.getInnov()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                sideByside[ind][0] = null;
+                sideByside[ind][1] = c2;
+            }
+            ind++;
         }
 
-        if(dna1.c_genes.size() > dna2.c_genes.size()) {
-            for(int i = shorterLength; i < longerLength; i++) {
-                sumOfDifferences += dna1.c_genes.get(i).getWieght();
+        int disJoints = 0;
+        int excess = 0;
+        double sumOfWeightDiffs = 0;
+
+        for(Connection[] c : sideByside) {
+
+            if(c[0] != null && c[1] != null) {
+                sumOfWeightDiffs += Math.abs(c[0].getWieght() - c[1].getWieght());
             }
-        } else {
-            for(int i = shorterLength; i < longerLength; i++) {
-                sumOfDifferences += dna2.c_genes.get(i).getWieght();
+
+            if(c[0] == null) {
+                sumOfWeightDiffs += c[1].getWieght();
+                if(isDisjointConnection(dna1, c[1].getIn_id(), c[1].getOut_id())) disJoints++;
+                else excess++;
             }
+
+            if(c[1] == null) {
+                sumOfWeightDiffs += c[0].getWieght();
+                if(isDisjointConnection(dna2, c[0].getIn_id(), c[0].getOut_id())) disJoints++;
+                else excess++;
+            }
+
         }
 
-        double avgDiff = sumOfDifferences / longerLength;
+        double avgWeightDiffs = sumOfWeightDiffs / (longerLength + shorterLength);
 
+        double d = (AlotOfConstants.cForDisjoint * disJoints) / longerLength;
+        double e = (AlotOfConstants.cForExcess * excess) / longerLength;
+        double w = AlotOfConstants.cForWeights * avgWeightDiffs;
+
+        return d + e + w;
         
-        
-
-
-
-
-
     }
-
 
 }
 
