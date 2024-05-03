@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class Graph {
-    private Map<Integer, List<Integer>> graph;
+    Map<Integer, List<Integer>> graph;
 
     public Graph() {
         this.graph = new HashMap<>();
@@ -63,7 +63,7 @@ public class Graph {
         for (Integer node : graph.keySet()) {
 
             if(startNodes.contains(node)) {
-                if(graph.get(node).isEmpty())
+                if(!allVisited.contains(node) || graph.get(node).isEmpty())
                     return false;
             }
 

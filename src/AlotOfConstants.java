@@ -7,7 +7,13 @@ public class AlotOfConstants {
     public static double GUASIAN_STD = 0.05;
     public static double MAX_SCALING = 1.1;
     public static double MIN_SCALING = 0.9;
-    public static double COMP_THRSHOLD = 2.5;
+
+    //for sppeciation
+    public static double COMP_THRSHOLD = 2.0;
+
+    public static double cForDisjoint = 2;
+    public static double cForExcess = 2;
+    public static double cForWeights = 1;
 
     //clamping values depends on activation function according to GPT
     //need more research on this.......

@@ -1,5 +1,5 @@
 package NeuralNetwork;
-public class Connection {
+public class Connection implements Comparable<Connection> {
     
     int in_id;
     int out_id;
@@ -50,6 +50,11 @@ public class Connection {
 
     public boolean isEnabled() {
         return isEnabled;
+    }
+
+    @Override
+    public int compareTo(Connection o) {
+        return Integer.compare(this.innov, o.innov);
     }
 
     
