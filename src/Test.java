@@ -16,7 +16,21 @@ public class Test {
         // pTest.testMutatingWieghts();
         // //updateAllPossibleConnections();
 
-        temp();
+        //temp();
+
+        int t = 30;
+
+        double[] ps = {0.1, 0.3, 0.2, 0.2, 0.15, 0.025, 0.015, 0.01};
+
+        double s = 0;
+
+        for(double d : ps) {
+
+            s+=(1 - d) / (ps.length - 1);
+
+        }
+
+        System.out.println(s);
 
     }
 

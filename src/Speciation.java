@@ -4,23 +4,24 @@ import java.util.Map;
 import java.util.Set;
 
 import NeuralNetwork.Connection;
+import NeuralNetwork.DNA;
 
 public class Speciation {
 
     //start of speciation
-    public static void speciate(DNA[] populationDNAs) {
+    public static void speciate() {
 
         Map<DNA, Map<DNA, Double>> distances = new HashMap<>();
         // Calculate compatibility distance between individuals
-        for (int i = 0; i < populationDNAs.length; i++) {
+        for (int i = 0; i < Population.populationDNAs.length; i++) {
             Map<DNA, Double> individualDistances = new HashMap<>();
-            for (int j = 0; j < populationDNAs.length; j++) {
-                if (populationDNAs[i] != populationDNAs[j]) {
-                    double distance = calculateCompatibilityDistance(populationDNAs[i], populationDNAs[j]);
-                    individualDistances.put(populationDNAs[j], distance);
+            for (int j = 0; j < Population.populationDNAs.length; j++) {
+                if (Population.populationDNAs[i] != Population.populationDNAs[j]) {
+                    double distance = calculateCompatibilityDistance(Population.populationDNAs[i], Population.populationDNAs[j]);
+                    individualDistances.put(Population.populationDNAs[j], distance);
                 }
             }
-            distances.put(populationDNAs[i], individualDistances);
+            distances.put(Population.populationDNAs[i], individualDistances);
         }
 
         // for (Map.Entry<DNA, Map<DNA, Double>> entry : distances.entrySet()) {
@@ -33,17 +34,60 @@ public class Speciation {
         //     }
         // }
 
-        for (int i = 0; i < populationDNAs.length; i++) {
-            if(!isAlreadyInSpecies(populationDNAs[i])) {
-                putInSpecie(distances, populationDNAs[i]);
+        for (int i = 0; i < Population.populationDNAs.length; i++) {
+            if(!isAlreadyInSpecies(Population.populationDNAs[i])) {
+                putInSpecie(distances, Population.populationDNAs[i]);
             }
         }
 
     }
 
+    public static void updateSpeciesAvgFitness() {
+
+        for(Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
+
+            Specie sp = entry.getValue();
+            double avgFitness = 0;
+
+            for(DNA dna : sp.list) {
+
+                avgFitness += dna.getFitness();
+
+            }
+
+            sp.setAvgFitness(avgFitness / sp.list.size());
+
+        }
+
+    }
+
+    public static void putInSpecieByRepresentative(DNA individual) {
+
+        boolean found = false;
+
+        for(Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
+            Specie s = entry.getValue();
+            if(calculateCompatibilityDistance(individual, s.getRepresentative()) < AlotOfConstants.COMP_THRSHOLD) {
+                found = true;
+                s.list.add(individual);
+                //System.out.println("Speice ID: "+entry.getKey());
+                return;
+            }
+        }
+
+        if(!found) {
+            Population.SPECIE_ID++;
+            Specie newSpecie = new Specie();
+            newSpecie.list.add(individual);
+            newSpecie.setReprentative();
+            Population.species.put(Population.SPECIE_ID, newSpecie);
+            //System.out.println("New Spe ID: "+Population.SPECIE_ID);
+        }
 
 
-    public static void putInSpecie(Map<DNA, Map<DNA, Double>> distances, DNA individual) {
+    }
+
+    private static void putInSpecie(Map<DNA, Map<DNA, Double>> distances, DNA individual) {
 
         boolean gotIt = false;
 
@@ -186,15 +230,17 @@ public class Speciation {
     }
 
     public static void printSpecies() {
+
         for (Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
           Integer speciesId = entry.getKey();
           Specie specie = entry.getValue();
-          System.out.println("Specie " + speciesId + ":");
+          System.out.println("Specie " + speciesId + " AvgFitness: "+specie.avgFitness+" : ");
           System.out.println("  Members:");
           for (DNA dna : specie.list) {
             System.out.println("    " + dna.id);
           }
         }
+
     }
 
     

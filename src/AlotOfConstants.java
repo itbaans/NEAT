@@ -9,7 +9,7 @@ public class AlotOfConstants {
     public static double MIN_SCALING = 0.9;
 
     //for sppeciation
-    public static double COMP_THRSHOLD = 2.0;
+    public static double COMP_THRSHOLD = 1.5;
 
     public static double cForDisjoint = 2;
     public static double cForExcess = 2;
@@ -20,11 +20,13 @@ public class AlotOfConstants {
     public static double MAX_CLAMP_VALUE = 1;
     public static double MIN_CLAMP_VALUE = -1;
 
-    public static double probNewNode = 0.2;
+    public static double probNewNode = 0.3;
     public static double probRemoveNode = 0.05;
     public static double probNewConn = 0.05;
-    public static double probRemoveConn = 0.2;
-    public static double probChangeWieght = 0.5;
+    public static double probRemoveConn = 0.3;
+    public static double probChangeWieght = 0.3;
+
+    public static double percToKill = 0.4;
 
 
 

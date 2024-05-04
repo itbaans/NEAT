@@ -35,6 +35,28 @@ public class Statistics {
 
     }
 
+    public static int theCollectionPikcerGetInd(double[] percentages, boolean invrse) {
+
+        double[] probablities = new double[percentages.length];
+
+        double sum = 0;
+        for(int i = 0; i < probablities.length; i++) {
+
+
+            probablities[i] = invrse ? Power(percentages[i] / 100, -2) : Power(percentages[i] / 100, 2);
+            sum += probablities[i];
+
+        }
+
+        for(int i = 0; i < probablities.length; i++) {
+            probablities[i] = probablities[i] / sum;
+
+        }
+
+        return poolSelect(probablities);
+
+    }
+
     public static int poolSelect(double[] probablities) {
 
         int ind = 0;

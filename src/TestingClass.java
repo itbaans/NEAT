@@ -1,12 +1,13 @@
 import NeuralNetwork.Connection;
+import NeuralNetwork.DNA;
 
 public class TestingClass {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws CloneNotSupportedException {
         
         Population p = new Population(10);
-        //p.printSpecies();
-        printDNAs(p.populationDNAs);
+        //Speciation.printSpecies();
+        //printDNAs(Population.populationDNAs);
 
     }
     

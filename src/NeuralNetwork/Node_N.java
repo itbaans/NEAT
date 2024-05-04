@@ -1,7 +1,7 @@
 package NeuralNetwork;
 import java.util.Hashtable;
 
-public  class Node_N implements Comparable<Node_N> {
+public  class Node_N implements Comparable<Node_N>, Cloneable {
 
     int node_id;
     boolean isHiddenInput;
@@ -11,6 +11,11 @@ public  class Node_N implements Comparable<Node_N> {
     double output;
     double bias;
  
+    public Object clone() throws CloneNotSupportedException {
+        Node_N clone = (Node_N) super.clone();
+        clone.outs = (Hashtable<Node_N, Double>) outs.clone();
+        return clone;
+    }
 
     public Node_N(int id, boolean h_i, boolean h_o) {
 

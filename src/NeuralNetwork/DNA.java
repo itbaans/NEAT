@@ -1,13 +1,21 @@
+package NeuralNetwork;
 import java.util.LinkedList;
 
-import NeuralNetwork.Connection;
-import NeuralNetwork.Node_N;
+public class DNA implements Comparable<DNA> {
 
-public class DNA {
+    public int id;
+    public double fitness;
+    public double getFitness() {
+        return fitness;
+    }
 
-    int id;
-    LinkedList<Node_N> n_genes = new LinkedList<>();
-    LinkedList<Connection> c_genes = new LinkedList<>();
+    public void setFitness(double fitness) {
+        this.fitness = fitness;
+    }
+
+    public LinkedList<Node_N> n_genes = new LinkedList<>();
+    public LinkedList<Connection> c_genes = new LinkedList<>();
+
     public DNA(LinkedList<Node_N> n_genes, LinkedList<Connection> c_genes) {
         this.n_genes = n_genes;
         this.c_genes = c_genes;
@@ -62,6 +70,11 @@ public class DNA {
 
         return null;
 
+    }
+
+    @Override
+    public int compareTo(DNA o) {
+        return Double.compare(this.fitness, o.getFitness());
     }
 
 }

@@ -9,7 +9,7 @@ import NeuralNetwork.NueralNetwork;
 import java.awt.*;
 import java.awt.event.*;
 
-public class BotServival extends JPanel implements KeyListener, MadeForNeat {
+public class BotServival extends JPanel implements KeyListener {
     
     private static final int WIDTH = 500;
     private static final int HEIGHT = 500;
@@ -151,9 +151,5 @@ public class BotServival extends JPanel implements KeyListener, MadeForNeat {
         });
     }
 
-    @Override
-    public double getFitness() {
-        return myNetwork.getFitness();
-    }
 }
 

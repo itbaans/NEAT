@@ -8,16 +8,13 @@ import java.util.Enumeration;
 public class NueralNetwork {
     
     LinkedList<LinkedList<Node_N>> layers = new LinkedList<>();
-    LinkedList<Connection> connectionGenes = new LinkedList<>();
-    LinkedList<Node_N> nodeGenes = new LinkedList<>();
+    DNA myDNA;
     Random rand = new Random();
-    double fitness;
 
 
-    public NueralNetwork(LinkedList<Node_N> nGenes, LinkedList<Connection> cGenes) {
+    public NueralNetwork(DNA dna) {
 
-        nodeGenes = nGenes;
-        connectionGenes = cGenes;
+        myDNA = dna;
         decodeGenses();
 
     }
@@ -70,13 +67,13 @@ public class NueralNetwork {
 
     public void decodeGenses() {
 
-        for(Connection c : connectionGenes) {
+        for(Connection c : myDNA.c_genes) {
 
-            for(Node_N n : nodeGenes) {
+            for(Node_N n : myDNA.n_genes) {
 
                 if(c.in_id == n.node_id) {
 
-                    for(Node_N n2 : nodeGenes) {
+                    for(Node_N n2 : myDNA.n_genes) {
 
                         if(c.out_id == n2.node_id) {
 
@@ -97,7 +94,7 @@ public class NueralNetwork {
         layers.add(ins);
         layers.add(outs);
         
-        for(Node_N n : nodeGenes) {
+        for(Node_N n : myDNA.n_genes) {
 
             if(!n.isHiddenInput) ins.add(n);
             if(!n.isHiddenOutput) outs.add(n);
@@ -198,7 +195,7 @@ public class NueralNetwork {
 
                 double wgt = rand.nextDouble() * 2 - 1;
                 n.setConnection(n2, wgt);
-                connectionGenes.add(new Connection(n.node_id, n2.node_id, wgt, true, count));
+                myDNA.c_genes.add(new Connection(n.node_id, n2.node_id, wgt, true, count));
                 count++;
 
             }
@@ -212,11 +209,11 @@ public class NueralNetwork {
 
     public void setInputs(double[] inputs) {
 
-        if(inputs.length != nodeGenes.size()) return;
+        if(inputs.length != myDNA.n_genes.size()) return;
 
         int i = 0;
 
-        for (Node_N node : nodeGenes) {
+        for (Node_N node : myDNA.n_genes) {
 
             node.setInput(inputs[i]);
             i++;
@@ -269,11 +266,11 @@ public class NueralNetwork {
     }
 
     public double getFitness() {
-        return fitness;
+        return myDNA.getFitness();
     }
 
     public void setFitness(double fitness) {
-        this.fitness = fitness;
+        myDNA.setFitness(fitness);
     }
 
     public LinkedList<LinkedList<Node_N>> getLayers() {
@@ -284,53 +281,6 @@ public class NueralNetwork {
         this.layers = layers;
     }
 
-    public LinkedList<Connection> getConnectionGenes() {
-        return connectionGenes;
-    }
-
-    public void setConnectionGenes(LinkedList<Connection> connectionGenes) {
-        this.connectionGenes = connectionGenes;
-    }
-
-    public LinkedList<Node_N> getNodeGenes() {
-        return nodeGenes;
-    }
-
-    public void setNodeGenes(LinkedList<Node_N> nodeGenes) {
-        this.nodeGenes = nodeGenes;
-    }
 
 
 }
-
-// public void sortNodeList(LinkedList<Node_N> nodeList) {
-    //     // Define custom comparator to sort the list
-    //     Comparator<Node_N> comparator = new Comparator<Node_N>() {
-    //         @Override
-    //         public int compare(Node_N node1, Node_N node2) {
-    //             // First, check if both nodes are hidden inputs or hidden outputs
-    //             if ((node1.isHiddenInput && node1.isHiddenOutput) && (node2.isHiddenInput && node2.isHiddenOutput)) {
-    //                 // If both are hidden inputs or hidden outputs, maintain their order
-    //                 return 0;
-    //             } else if (node1.isHiddenInput && !node2.isHiddenInput) {
-    //                 // If only node1 is hidden input, it should come later in the list
-    //                 return 1;
-    //             } else if (!node1.isHiddenInput && node2.isHiddenInput) {
-    //                 // If only node2 is hidden input, it should come later in the list
-    //                 return -1;
-    //             } else if (node1.isHiddenOutput && !node2.isHiddenOutput) {
-    //                 // If only node1 is hidden output, it should come earlier in the list
-    //                 return -1;
-    //             } else if (!node1.isHiddenOutput && node2.isHiddenOutput) {
-    //                 // If only node2 is hidden output, it should come earlier in the list
-    //                 return 1;
-    //             } else {
-    //                 // If neither node is hidden input or hidden output, maintain their order
-    //                 return 0;
-    //             }
-    //         }
-    //     };
-
-    //     // Sort the list using the custom comparator
-    //     Collections.sort(nodeList, comparator);
-    // }

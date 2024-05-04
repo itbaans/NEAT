@@ -10,7 +10,9 @@ import java.util.Map;
 
 import org.apache.commons.geometry.euclidean.twod.Vector2D;
 
-public class Player {
+import NeuralNetwork.NueralNetwork;
+
+public class Player implements MadeForNeat {
     
     Vector2D pos;
     Vector2D velocity;
@@ -24,6 +26,7 @@ public class Player {
     Vector2D[] tracers = new Vector2D[10];
     double[][] whatTracersSee = new double[2][10];
     float angleThreshold = 0.01f;
+    NueralNetwork brain;
     
 
     public Player(int x, int y) {
@@ -227,6 +230,18 @@ public class Player {
 
         g.setTransform(oldTransform);
     }
+
+    @Override
+    public double getFitness() {
+        return brain.getFitness();
+    }
+
+    @Override
+    public void setFitness(double val) {
+        brain.setFitness(val);
+    }
+
+    
     
 
 

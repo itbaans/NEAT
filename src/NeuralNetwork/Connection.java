@@ -1,11 +1,15 @@
 package NeuralNetwork;
-public class Connection implements Comparable<Connection> {
+public class Connection implements Comparable<Connection>, Cloneable {
     
     int in_id;
     int out_id;
     double wieght;
     boolean isEnabled;
     
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 
     @Override
     public String toString() {
