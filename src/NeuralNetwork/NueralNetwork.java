@@ -8,6 +8,10 @@ import java.util.Enumeration;
 public class NueralNetwork {
     
     LinkedList<LinkedList<Node_N>> layers = new LinkedList<>();
+    public void setMyDNA(DNA myDNA) {
+        this.myDNA = myDNA;
+    }
+
     DNA myDNA;
     Random rand = new Random();
 
@@ -67,6 +71,20 @@ public class NueralNetwork {
 
     public void decodeGenses() {
 
+        //System.out.println("here");
+
+        layers.clear();
+
+        // System.out.println("DNA ID: "+myDNA.id);
+
+        // for(Connection c : myDNA.c_genes) {
+
+        //     System.out.print(" ["+c.getIn_id()+" ,"+c.getOut_id()+"], Innov: ("+c.getInnov()+") ");
+                
+        // }
+
+        //System.out.println();
+        //System.out.println("here clear");
         for(Connection c : myDNA.c_genes) {
 
             for(Node_N n : myDNA.n_genes) {
@@ -89,6 +107,8 @@ public class NueralNetwork {
 
         }
 
+        //System.out.println("layering 1");
+
         LinkedList<Node_N> ins = new LinkedList<>();
         LinkedList<Node_N> outs = new LinkedList<>();
         layers.add(ins);
@@ -101,9 +121,11 @@ public class NueralNetwork {
 
         }
 
+        //System.out.println("layering 2");
+
         layering();
 
-
+        //System.out.println("out");
     }
 
     public void layering() {
@@ -111,7 +133,7 @@ public class NueralNetwork {
         int newLayerInd = 1;
 
         for(int i = 0; i < layers.size() - 1; i++) {
-
+            //System.out.println("i: " + i );
             LinkedList<Node_N> tempList = new LinkedList<>();
 
             for (Node_N n : layers.get(i)) {
@@ -123,7 +145,7 @@ public class NueralNetwork {
                 }
 
             }
-
+            //System.out.println("i: " + i );
             LinkedList<Node_N> newLayer = new LinkedList<>();
             for (Node_N n : tempList) {
 
@@ -279,6 +301,10 @@ public class NueralNetwork {
 
     public void setLayers(LinkedList<LinkedList<Node_N>> layers) {
         this.layers = layers;
+    }
+
+    public DNA getMyDNA() {
+        return myDNA;
     }
 
 

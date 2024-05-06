@@ -77,4 +77,32 @@ public class DNA implements Comparable<DNA> {
         return Double.compare(this.fitness, o.getFitness());
     }
 
+    public void printDNA() {
+
+        System.out.println("DNA ID: "+id);
+
+            for(Connection c : c_genes) {
+
+                System.out.print(" ["+c.getIn_id()+" ,"+c.getOut_id()+"], Innov: ("+c.getInnov()+") ");
+                
+            }
+
+            System.out.println();
+
+    }
+
+    public void printDNA_n() {
+
+        System.out.println("DNA ID: "+id);
+
+            for(Node_N n : n_genes) {
+
+                System.out.print(" ["+n.getNode_id()+"]");
+                
+            }
+
+            System.out.println();
+
+    }
+
 }

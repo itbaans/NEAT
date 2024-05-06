@@ -117,8 +117,11 @@ public class CrossOver {
             DNA par2 = getContender(parentPossibilities, selectedSp);
 
             DNA child = actualCrossOver(par1, par2);
-
+            
+            //child.printDNA();
+            //System.out.println("**");
             Mutation.pickOneOfMutation(child);
+            //child.printDNA();
 
             for(int p = 0; p < Population.populationDNAs.length; p++) {
                 if(Population.populationDNAs[p] == null) {
@@ -153,7 +156,7 @@ public class CrossOver {
         LinkedList<Connection> newConns = new LinkedList<>();
         LinkedList<Node_N> newNodes = new LinkedList<>();
 
-        Set<Node_N> set = new HashSet<>();
+        Set<Integer> set = new HashSet<>();
 
         for (Connection c : p1.c_genes) {
             boolean found = false;
@@ -162,19 +165,21 @@ public class CrossOver {
 
                     if(p1.getFitness() > p2.getFitness()) {
 
-                        newConns.add((Connection)c.clone());
+                        Connection temp = (Connection)c.clone();
+                        if(!Population.checkIfLoopExist(newConns, temp.getIn_id(), temp.getOut_id())) newConns.add(temp);
 
-                        set.add(p1.getNode(c.getIn_id()));
-                        set.add(p1.getNode(c.getOut_id()));
+                        set.add(c.getIn_id());
+                        set.add(c.getOut_id());
 
 
                     }
                     else {
                         
-                        newConns.add((Connection)c2.clone());
+                        Connection temp = (Connection)c2.clone();
+                        if(!Population.checkIfLoopExist(newConns, temp.getIn_id(), temp.getOut_id())) newConns.add(temp);
 
-                        set.add(p2.getNode(c2.getIn_id()));
-                        set.add(p2.getNode(c2.getOut_id()));
+                        set.add(c2.getIn_id());
+                        set.add(c2.getOut_id());
 
                     }
 
@@ -183,12 +188,13 @@ public class CrossOver {
                 }
             }
             
-            if (!found && rand.nextDouble() < 0.5) {
+            if (!found) {
 
-                newConns.add((Connection)c.clone());
+                Connection temp = (Connection)c.clone();
+                if(!Population.checkIfLoopExist(newConns, temp.getIn_id(), temp.getOut_id())) newConns.add(temp);
 
-                set.add(p1.getNode(c.getIn_id()));
-                set.add(p1.getNode(c.getOut_id()));
+                set.add(c.getIn_id());
+                set.add(c.getOut_id());
             }
         }
         
@@ -200,19 +206,32 @@ public class CrossOver {
                     break;
                 }
             }
-            if (!found && rand.nextDouble() < 0.5) {
-                newConns.add((Connection)c2.clone());
+            if (!found) {
 
-                set.add(p2.getNode(c2.getIn_id()));
-                set.add(p2.getNode(c2.getOut_id()));
+                Connection temp = (Connection)c2.clone();
+                if(!Population.checkIfLoopExist(newConns, temp.getIn_id(), temp.getOut_id())) newConns.add(temp);
+
+                set.add(c2.getIn_id());
+                set.add(c2.getOut_id());
             }
             
         }
 
-        for(Node_N n : set) {
-            newNodes.add((Node_N)n.clone());
+        for(Integer n : set) {
+            //System.out.print(n.getNode_id() + " ");
+            if(n <= Population.no_of_inputs) {
+                newNodes.add(new Node_N(n, false, true));
+            }
+            else if(n > Population.no_of_inputs && n <= Population.no_of_inputs + Population.no_of_outputs) {
+                newNodes.add(new Node_N(n, true, false));
+            }
+
+            else newNodes.add(new Node_N(n, true, true));
+            
 
         }
+
+        
 
         DNA theBirth = new DNA(newNodes, newConns);
         Population.DNA_ID++;

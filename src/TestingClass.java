@@ -1,13 +1,17 @@
 import NeuralNetwork.Connection;
 import NeuralNetwork.DNA;
+import NeuralNetwork.NueralNetwork;
 
 public class TestingClass {
 
     public static void main(String[] args) throws CloneNotSupportedException {
         
-        Population p = new Population(10);
-        //Speciation.printSpecies();
-        //printDNAs(Population.populationDNAs);
+        
+        Population p = new Population(150, 2, 1);
+        
+        p.XORtest();
+
+
 
     }
     

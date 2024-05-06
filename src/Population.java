@@ -14,7 +14,7 @@ import NeuralNetwork.NueralNetwork;
 
 public class Population {
 
-    MadeForNeat[] games;
+    MadeForNeat[] players;
     static int populationSize;
     static DNA[] populationDNAs;
     static int no_of_inputs;
@@ -30,25 +30,23 @@ public class Population {
     public Population(int size, int ins, int outs) {
 
         populationSize = size;
-        games = new Player[populationSize];
+        //players = new Player[populationSize];
         populationDNAs = new DNA[populationSize];
         no_of_inputs = ins;
         no_of_outputs = outs;
 
     }
 
-    // //for testing a single dna
-    // public Population() {
+    public Population(MadeForNeat[] players, int inputs, int outputs) {
 
-    //     populationSize = 1;
-    //     populationDNAs = new DNA[populationSize];
-    //     no_of_inputs = 3;
-    //     no_of_outputs = 3;
-    //     startOfTimes();
-    //     tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
-    //     tesNetwork.displayStructure();
-    
-    // }
+        populationSize = players.length;
+        this.players = players;
+        no_of_inputs = inputs;
+        no_of_outputs = outputs;
+        populationDNAs = new DNA[populationSize];
+
+        
+    }
 
     //testing multiple dnas
     public Population(int popSize) throws CloneNotSupportedException {
@@ -59,6 +57,85 @@ public class Population {
         no_of_outputs = 3;
 
         startSimulation();
+
+    }
+
+    public void XORtest() throws CloneNotSupportedException {
+
+        //XOR test
+       
+        // # 2-input XOR inputs and expected outputs.
+        // xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
+        // xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
+
+
+        // def eval_genomes(genomes, config):
+        // for genome_id, genome in genomes:
+        //     genome.fitness = 4.0
+        //     net = neat.nn.FeedForwardNetwork.create(genome, config)
+        //     for xi, xo in zip(xor_inputs, xor_outputs):
+        //         output = net.activate(xi)
+        //         genome.fitness -= (output[0] - xo[0]) ** 2
+
+
+        NueralNetwork[] NNs = new NueralNetwork[150];
+        startOfTimes();
+        for(int i = 0; i < NNs.length; i++) {
+
+            NNs[i] = new NueralNetwork(populationDNAs[i]);
+
+        }
+
+        int generations = 0;
+        double[][] xor_inputs = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.}, {1.0, 1.0}};
+        double[][] xor_outputs = {{0}, {1}, {1}, {0}};
+
+        while(generations < 150) {
+
+            //              
+            //eval
+            for(int i = 0; i < NNs.length; i++) {
+    
+                NNs[i].setFitness(4);
+                for(int j = 0; j < xor_inputs.length; j++) {
+    
+                    NNs[i].setInputs(xor_inputs[j]);
+                    double[] outs = NNs[i].getOutputs();
+                    double fitnes = Math.pow((outs[0] - xor_outputs[j][0]), 2);
+                    NNs[i].setFitness(NNs[i].getFitness() - fitnes);
+    
+                }
+            }
+
+            //System.out.println("ff");
+            Speciation.updateSpeciesAvgFitness();
+            
+            CrossOver.theKillingSpree();
+            CrossOver.theReproduction();
+
+            for(int i = 0; i < NNs.length; i++) {
+
+                NNs[i].setMyDNA(populationDNAs[i]);
+                NNs[i].decodeGenses();
+                
+            }
+
+            printMaxFitnessDNA();
+            System.out.println("generation: "+generations);
+            
+            generations++;
+
+        }
+
+    }
+
+    public void printMaxFitnessDNA() {
+
+        double max = Double.MIN_VALUE;
+        for(DNA dna : populationDNAs) {
+            if(dna.getFitness() > max) max = dna.getFitness();
+        }
+        System.out.println("MAX FITNESS: "+max);
 
     }
 

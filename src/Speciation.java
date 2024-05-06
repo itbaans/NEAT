@@ -235,10 +235,10 @@ public class Speciation {
           Integer speciesId = entry.getKey();
           Specie specie = entry.getValue();
           System.out.println("Specie " + speciesId + " AvgFitness: "+specie.avgFitness+" : ");
-          System.out.println("  Members:");
-          for (DNA dna : specie.list) {
-            System.out.println("    " + dna.id);
-          }
+        //   System.out.println("  Members:");
+        //   for (DNA dna : specie.list) {
+        //     System.out.println("    " + dna.id);
+        //   }
         }
 
     }

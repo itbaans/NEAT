@@ -8,6 +8,8 @@ public class AlotOfConstants {
     public static double MAX_SCALING = 1.1;
     public static double MIN_SCALING = 0.9;
 
+    
+
     //for sppeciation
     public static double COMP_THRSHOLD = 1.5;
 
@@ -19,6 +21,9 @@ public class AlotOfConstants {
     //need more research on this.......
     public static double MAX_CLAMP_VALUE = 1;
     public static double MIN_CLAMP_VALUE = -1;
+
+    public static double MAX_BIAS = 30;
+    public static double MIN_BIAS = -30;
 
     public static double probNewNode = 0.3;
     public static double probRemoveNode = 0.05;

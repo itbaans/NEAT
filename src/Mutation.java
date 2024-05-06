@@ -72,7 +72,7 @@ public class Mutation {
                             double change = Population.rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
                             change = Population.rand.nextDouble() < 0.5 ? -change : change;
                             double value = dna.n_genes.get(i).getBias() + change;
-                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_CLAMP_VALUE, AlotOfConstants.MAX_CLAMP_VALUE));
+                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS));
 
 
                         }
@@ -86,7 +86,7 @@ public class Mutation {
                             double change = Population.rand.nextGaussian() * AlotOfConstants.GUASIAN_STD + AlotOfConstants.GUASIAN_MEAN;
                             change = Population.rand.nextDouble() < 0.5 ? -change : change;
                             double value = dna.n_genes.get(i).getBias() + change;
-                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_CLAMP_VALUE, AlotOfConstants.MAX_CLAMP_VALUE));
+                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS));
 
                         }
                         
@@ -110,7 +110,7 @@ public class Mutation {
                 for (int i = 0; i < n2; i++) {
 
                     double scale = Population.rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
-                    scale = clamp(scale, AlotOfConstants.MIN_CLAMP_VALUE, AlotOfConstants.MAX_CLAMP_VALUE);
+                    scale = clamp(scale, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS);
                     if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(dna.n_genes.get(i).getBias() * scale);
 
                 }
@@ -136,7 +136,7 @@ public class Mutation {
 
                 for (int i = 0; i < n2; i++) {
 
-                    if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(Population.rand.nextDouble() * 2 - 1);
+                    if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(Population.rand.nextDouble() * 60 - 30);
 
                 }
 
@@ -151,19 +151,20 @@ public class Mutation {
 
         //here i am assuming the dna n genes are sorted according to their ids
         //also nodes from 0 -> (no of inputs + no of outputs) order is never changed
+        Collections.sort(dna.n_genes);
         Node_N newNode = null;
 
-        for(int i = Population.no_of_inputs + Population.no_of_outputs; i < dna.n_genes.size(); i++) {
+        for(int i = Population.no_of_inputs + Population.no_of_outputs; i < dna.n_genes.size() - 1; i++) {
 
-            if(dna.n_genes.get(i).getNode_id() > (i + 1)) {
-                
-                newNode = new Node_N(i+1, true, true);
-                break;
-
+            if(dna.n_genes.get(i + 1).getNode_id() - dna.n_genes.get(i).getNode_id() > 1) {
+                newNode = new Node_N(i + 2, true, true);
             }
         }
 
         if(newNode == null) newNode = new Node_N(dna.getMaxNodeID() + 1, true, true);
+
+        // for(Node_N n : dna.n_genes) System.out.println(n.getNode_id());
+        // System.out.println("New id: "+newNode.getNode_id());
 
         Connection c = dna.c_genes.get(Population.rand.nextInt(dna.c_genes.size()));
 
@@ -172,6 +173,9 @@ public class Mutation {
 
         Integer id1 = Population.connections.get(in+","+newNode.getNode_id());
         Integer id2 = Population.connections.get(newNode.getNode_id()+","+out);
+
+        // System.out.println(in+","+newNode.getNode_id());
+        // System.out.println(newNode.getNode_id()+","+out);
 
         c.setEnabled(false);
 
@@ -255,6 +259,7 @@ public class Mutation {
 
     static void mutateWithConnection(DNA dna) {
 
+        Collections.sort(dna.n_genes);
         Hashtable<Node_N, Set<Node_N>> setsOfUnConnectedNodes = new Hashtable<>();
 
         for (int i = 0; i < Population.no_of_inputs; i++) {
@@ -287,6 +292,7 @@ public class Mutation {
         if(randKey.isHiddenOutput() && n2.isHiddenInput() && !Population.checkIfLoopExist(dna.c_genes, randKey.getNode_id(), n2.getNode_id())) {
 
             Integer id = Population.connections.get(randKey.getNode_id()+","+n2.getNode_id());
+            //System.out.println(randKey.getNode_id()+","+n2.getNode_id());
 
             if(id == null) {
 
@@ -405,7 +411,7 @@ public class Mutation {
         double[] mutatingPossibilities = {AlotOfConstants.probChangeWieght, AlotOfConstants.probNewConn, AlotOfConstants.probNewNode, AlotOfConstants.probRemoveConn, AlotOfConstants.probRemoveNode};
 
         int pick = Statistics.poolSelect(mutatingPossibilities);
-    
+        //System.out.println(pick+" picked");
         switch (pick) {
             case 0: 
                 mutateWithWeightsAndBiases(dna);             
