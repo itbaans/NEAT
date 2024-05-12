@@ -77,6 +77,7 @@ public class DNA implements Comparable<DNA> {
         return Double.compare(this.fitness, o.getFitness());
     }
 
+
     public void printDNA() {
 
         System.out.println("DNA ID: "+id);

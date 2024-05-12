@@ -15,6 +15,8 @@ public class Statistics {
     
     public static double theCollectionPikcer(double[] percentages, boolean invrse) {
 
+        if(percentages.length == 0) return 0;
+
         double[] probablities = new double[percentages.length];
 
         double sum = 0;
@@ -37,6 +39,8 @@ public class Statistics {
 
     public static int theCollectionPikcerGetInd(double[] percentages, boolean invrse) {
 
+        if(percentages.length == 0) return 0;
+        
         double[] probablities = new double[percentages.length];
 
         double sum = 0;

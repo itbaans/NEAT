@@ -45,7 +45,7 @@ public class NueralNetwork {
 
                 for (Node_N node : currentLayer) {
 
-                    System.out.print("  Node " + node.node_id + ": Connected to ");
+                    System.out.print("  Node " + node.node_id +"["+node.bias+"]"+ ": Connected to ");
                         Enumeration<Node_N> keys = node.outs.keys();
                         while(keys.hasMoreElements()) {
                             Node_N key = keys.nextElement();
@@ -231,15 +231,10 @@ public class NueralNetwork {
 
     public void setInputs(double[] inputs) {
 
-        if(inputs.length != myDNA.n_genes.size()) return;
+        if(inputs.length != layers.get(0).size()) return;
 
-        int i = 0;
-
-        for (Node_N node : myDNA.n_genes) {
-
-            node.setInput(inputs[i]);
-            i++;
-
+        for(int t = 0; t < layers.get(0).size(); t++) {
+            layers.get(0).get(t).setInput(inputs[t]);
         }
 
     }
@@ -253,7 +248,7 @@ public class NueralNetwork {
             for(int t = 0; t < layers.get(i).size(); t++) {
 
                 if(i > 0) layers.get(i).get(t).activateNode();
-                if(i == 0) layers.get(i).get(t).output = layers.get(i).get(t).input; 
+                if(i == 0) layers.get(i).get(t).output = layers.get(i).get(t).input;
 
             }
 

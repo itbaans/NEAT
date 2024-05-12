@@ -1,5 +1,8 @@
 package NeuralNetwork;
 import java.util.Hashtable;
+import java.util.Random;
+
+import org.apache.commons.math4.legacy.genetics.Population;
 
 public  class Node_N implements Comparable<Node_N>, Cloneable {
 
@@ -22,8 +25,17 @@ public  class Node_N implements Comparable<Node_N>, Cloneable {
         node_id = id;
         isHiddenInput = h_i;
         isHiddenOutput = h_o;
+        // Random rand = new Random();
+        // if(h_i) bias = rand.nextDouble() * 60 - 30;
 
     }
+
+    public void resetNode() {
+        input = 0;
+        output = 0;
+        clearOuts();
+    }
+    
 
     public double getConnectionWeight(Node_N node) {
         if(outs.get(node) != null) return outs.get(node);

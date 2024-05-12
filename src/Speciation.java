@@ -67,7 +67,9 @@ public class Speciation {
 
         for(Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
             Specie s = entry.getValue();
-            if(calculateCompatibilityDistance(individual, s.getRepresentative()) < AlotOfConstants.COMP_THRSHOLD) {
+            double val = calculateCompatibilityDistance(individual, s.getRepresentative());
+            //System.out.println(val);
+            if(val < AlotOfConstants.COMP_THRSHOLD) {
                 found = true;
                 s.list.add(individual);
                 //System.out.println("Speice ID: "+entry.getKey());
@@ -234,11 +236,12 @@ public class Speciation {
         for (Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
           Integer speciesId = entry.getKey();
           Specie specie = entry.getValue();
-          System.out.println("Specie " + speciesId + " AvgFitness: "+specie.avgFitness+" : ");
-        //   System.out.println("  Members:");
-        //   for (DNA dna : specie.list) {
-        //     System.out.println("    " + dna.id);
-        //   }
+          Collections.sort(specie.list);
+          System.out.println("Specie " + speciesId + " AvgFitness: "+specie.avgFitness+"  Members: "+specie.list.size());
+          System.out.println();
+          for (DNA dna : specie.list) {
+            System.out.println("    " + dna.id+" --> "+dna.getFitness());
+          }
         }
 
     }

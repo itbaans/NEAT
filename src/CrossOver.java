@@ -98,7 +98,7 @@ public class CrossOver {
 
             }
 
-            int selected = Statistics.theCollectionPikcerGetInd(spPossiblities, true);
+            int selected = Statistics.theCollectionPikcerGetInd(spPossiblities, false);
 
             Specie selectedSp = Population.species.get(keys[selected]);
 
@@ -116,12 +116,22 @@ public class CrossOver {
             DNA par1 = getContender(parentPossibilities, selectedSp);
             DNA par2 = getContender(parentPossibilities, selectedSp);
 
+            // System.out.println("par2 bfr: ");
+            // for(Node_N t : par2.n_genes){
+            //     System.out.println(t.getBias());
+            // }
+
             DNA child = actualCrossOver(par1, par2);
             
             //child.printDNA();
             //System.out.println("**");
             Mutation.pickOneOfMutation(child);
             //child.printDNA();
+
+            // System.out.println("par2 aftr: ");
+            // for(Node_N t : par2.n_genes){
+            //     System.out.println(t.getBias());
+            // }
 
             for(int p = 0; p < Population.populationDNAs.length; p++) {
                 if(Population.populationDNAs[p] == null) {
@@ -170,7 +180,6 @@ public class CrossOver {
 
                         set.add(c.getIn_id());
                         set.add(c.getOut_id());
-
 
                     }
                     else {
@@ -230,8 +239,6 @@ public class CrossOver {
             
 
         }
-
-        
 
         DNA theBirth = new DNA(newNodes, newConns);
         Population.DNA_ID++;

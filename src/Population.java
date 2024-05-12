@@ -78,54 +78,90 @@ public class Population {
         //         genome.fitness -= (output[0] - xo[0]) ** 2
 
 
-        NueralNetwork[] NNs = new NueralNetwork[150];
+        //NueralNetwork[] NNs = new NueralNetwork[populationSize];
         startOfTimes();
-        for(int i = 0; i < NNs.length; i++) {
 
-            NNs[i] = new NueralNetwork(populationDNAs[i]);
-
-        }
+        // // for(int i = 0; i < NNs.length; i++) {
+        //     NNs[i] = new NueralNetwork(populationDNAs[i]);
+        // }
 
         int generations = 0;
         double[][] xor_inputs = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.}, {1.0, 1.0}};
         double[][] xor_outputs = {{0}, {1}, {1}, {0}};
 
-        while(generations < 150) {
+        // for(int i = 0; i < NNs.length; i++) {
+    
+        //     NNs[i].setFitness(4);
+        //     for(int j = 0; j < xor_inputs.length; j++) {
 
+        //         NNs[i].setInputs(xor_inputs[j]);
+        //         double[] outs = NNs[i].getOutputs();
+        //         //System.out.println("NN "+i+" outs: "+outs[0]+" input: "+j);
+        //         double fitnes = Math.pow((outs[0] - xor_outputs[j][0]), 2);
+        //         NNs[i].setFitness(NNs[i].getFitness() - fitnes);
+        //         NNs[i].displayStructure();
+
+        //     }
+        // }
+
+        while(generations < 300) {
             //              
             //eval
-            for(int i = 0; i < NNs.length; i++) {
+            for(int i = 0; i < populationDNAs.length; i++) {
     
-                NNs[i].setFitness(4);
+                populationDNAs[i].fitness = 4;
+                clearNodeOuts(populationDNAs[i].n_genes);
+                NueralNetwork nn = new NueralNetwork(populationDNAs[i]);
+                //populationDNAs[i].printDNA_n();
+                
                 for(int j = 0; j < xor_inputs.length; j++) {
-    
-                    NNs[i].setInputs(xor_inputs[j]);
-                    double[] outs = NNs[i].getOutputs();
+                    
+                    nn.setInputs(xor_inputs[j]);
+                    double[] outs = nn.getOutputs();
+                    //System.out.println("NN "+i+" outs: "+outs[0]+" input: "+j);
                     double fitnes = Math.pow((outs[0] - xor_outputs[j][0]), 2);
-                    NNs[i].setFitness(NNs[i].getFitness() - fitnes);
+                    populationDNAs[i].fitness -= fitnes;
+                    // if(j == 0){
+                    //     System.out.println("ID: "+populationDNAs[i].id+" Input"+xor_inputs[j][0]+", "+xor_inputs[j][1]);
+                    //     nn.displayStructure();
+                    // }
     
                 }
             }
 
             //System.out.println("ff");
             Speciation.updateSpeciesAvgFitness();
+            //Speciation.printSpecies();
             
             CrossOver.theKillingSpree();
             CrossOver.theReproduction();
 
-            for(int i = 0; i < NNs.length; i++) {
+            // for(int i = 0; i < NNs.length; i++) {
 
-                NNs[i].setMyDNA(populationDNAs[i]);
-                NNs[i].decodeGenses();
+            //     NNs[i].setMyDNA(populationDNAs[i]);
+            //     NNs[i].decodeGenses();
                 
-            }
+            // }
 
+            //printDNAfitnesses();
             printMaxFitnessDNA();
             System.out.println("generation: "+generations);
             
             generations++;
 
         }
+
+    }
+
+    public void printDNAfitnesses() {
+
+        System.out.print("[");
+        for(DNA dna : populationDNAs) {
+            System.out.println("ID: "+dna.id);
+            System.out.print(dna.getFitness()+" ,");
+        }
+        System.out.println("]");
+
 
     }
 
@@ -186,7 +222,7 @@ public class Population {
         switch (pick) {
             case 0: //change of wieghts
                 //System.out.println("WEIGHT CHANGED");
-                Mutation.mutateWithWeightsAndBiases(dna);
+                Mutation.mutateWithWeights(dna);
                 //tesNetwork = new NueralNetwork(populationDNAs[0].n_genes, populationDNAs[0].c_genes);
                 //tesNetwork.displayStructure();
                 break;
@@ -230,7 +266,7 @@ public class Population {
     static void clearNodeOuts(LinkedList<Node_N> list) {
 
         for(int i = 0; i < list.size(); i++) {
-            list.get(i).clearOuts();
+            list.get(i).resetNode();
         }
     }
 

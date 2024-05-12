@@ -26,5 +26,15 @@ public class Specie {
         this.avgFitness = avgFitness;
     }
 
+    public double getMaxFit() {
+
+        double max = Double.MIN_VALUE;
+        for(DNA d : list) {
+            if(d.getFitness() > max) max = d.getFitness();
+        }
+        return max;
+
+    }
+
 
 }

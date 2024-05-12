@@ -14,26 +14,100 @@ import NeuralNetwork.Node_N;
 
 public class Mutation {
     
-    static void mutateWithWeightsAndBiases(DNA dna) {
+    static void mutateWithBiases(DNA dna) {
+
+        int randomNumber = Population.rand.nextInt(3) + 1;
+        Collections.shuffle(dna.n_genes);
+        // double[] percentages = {5, 15, 25, 50, 75};
+
+        // double percentage = Statistics.theCollectionPikcer(percentages, false);
+        // percentage = Population.rand.nextDouble() * ((percentage + 25) - percentage) + percentage;
+
+        int n2 = (int)Math.ceil(dna.n_genes.size() * AlotOfConstants.weightsMutationRate);
+
+        switch(randomNumber) {
+
+            case 1 : //add/subract small value
+               for (int i = 0; i < n2; i++) {
+
+                    if(AlotOfConstants.isUNIFORM) {
+
+                        if(dna.n_genes.get(i).isHiddenInput()) {
+
+                            double change = Population.rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
+                            change = Population.rand.nextDouble() < 0.5 ? -change : change;
+                            double value = dna.n_genes.get(i).getBias() + change;
+                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS));
+
+
+                        }
+                    }
+                    else {
+                        
+                        if(dna.n_genes.get(i).isHiddenInput()) {
+
+                            double change = Population.rand.nextGaussian() * AlotOfConstants.GUASIAN_STD + AlotOfConstants.GUASIAN_MEAN;
+                            change = Population.rand.nextDouble() < 0.5 ? -change : change;
+                            double value = dna.n_genes.get(i).getBias() + change;
+                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS));
+
+                        }
+                        
+                    }
+
+                }
+
+                break;
+
+            case 2:
+
+                for (int i = 0; i < n2; i++) {
+
+                    double scale = Population.rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
+                    scale = clamp(scale, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS);
+                    if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(dna.n_genes.get(i).getBias() * scale);
+
+                }
+
+                break;
+            
+            case 3:
+                n2 = (int)Math.ceil(dna.n_genes.size() * AlotOfConstants.weightsResetRate);
+                n2 = (n2 == 0) ? 1 : n2;
+
+                for (int i = 0; i < n2; i++) {
+
+                    if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(Population.rand.nextDouble() * 60 - 30);
+
+                }
+
+        }
+
+        Collections.sort(dna.n_genes);
+        return;
+
+    }
+
+    static void mutateWithWeights(DNA dna) {
 
         //3 choices, pick 1 randomly
         int randomNumber = Population.rand.nextInt(3) + 1;
 
         //shuffling because i want to pick first n random connections.
         Collections.shuffle(dna.c_genes);
-        Collections.shuffle(dna.n_genes);
+        
 
-        double[] percentages = {5, 15, 25, 50, 75};
+        // double[] percentages = {5, 15, 25, 50, 75};
 
-        //here higher percentages have more chance to be picked
-        double percentage = Statistics.theCollectionPikcer(percentages, false);
+        // //here higher percentages have more chance to be picked
+        // double percentage = Statistics.theCollectionPikcer(percentages, false);
 
-        //ranging it further
-        percentage = Population.rand.nextDouble() * ((percentage + 25) - percentage) + percentage;
+        // //ranging it further
+        // percentage = Population.rand.nextDouble() * ((percentage + 25) - percentage) + percentage;
         //n is for connection list
-        int n = (int)Math.ceil(dna.c_genes.size() * (percentage / 100));
+        int n = (int)Math.ceil(dna.c_genes.size() * AlotOfConstants.weightsMutationRate);
         //n2 is for nodes list
-        int n2 = (int)Math.ceil(dna.n_genes.size() * (percentage / 100));
+        //int n2 = (int)Math.ceil(dna.n_genes.size() * (percentage / 100));
 
         n = (n == 0) ? 1 : n;
 
@@ -63,37 +137,6 @@ public class Mutation {
 
                 }
 
-                for (int i = 0; i < n2; i++) {
-
-                    if(AlotOfConstants.isUNIFORM) {
-
-                        if(dna.n_genes.get(i).isHiddenInput()) {
-
-                            double change = Population.rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
-                            change = Population.rand.nextDouble() < 0.5 ? -change : change;
-                            double value = dna.n_genes.get(i).getBias() + change;
-                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS));
-
-
-                        }
-
-
-                    }
-                    else {
-                        
-                        if(dna.n_genes.get(i).isHiddenInput()) {
-
-                            double change = Population.rand.nextGaussian() * AlotOfConstants.GUASIAN_STD + AlotOfConstants.GUASIAN_MEAN;
-                            change = Population.rand.nextDouble() < 0.5 ? -change : change;
-                            double value = dna.n_genes.get(i).getBias() + change;
-                            dna.n_genes.get(i).setBias(clamp(value, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS));
-
-                        }
-                        
-                    }
-
-                }
-
                 break;
 
             
@@ -106,27 +149,15 @@ public class Mutation {
                     dna.c_genes.get(i).setWieght(dna.c_genes.get(i).getWieght() * scale);
 
                 }
-
-                for (int i = 0; i < n2; i++) {
-
-                    double scale = Population.rand.nextDouble() * (AlotOfConstants.MAX_SCALING - (AlotOfConstants.MIN_SCALING)) + (AlotOfConstants.MIN_SCALING);
-                    scale = clamp(scale, AlotOfConstants.MIN_BIAS, AlotOfConstants.MAX_BIAS);
-                    if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(dna.n_genes.get(i).getBias() * scale);
-
-                }
-
                 break;
 
             case 3 : //reset weights
 
                 //here lower percentages have more chance to be picked since i dont want to reset alot of wieghts
-                percentage = Statistics.theCollectionPikcer(percentages, true);
-                percentage = Population.rand.nextDouble() * ((percentage + 5) - percentage) + percentage;
-                n = (int)Math.ceil(dna.c_genes.size() * (percentage / 100));
+                // percentage = Statistics.theCollectionPikcer(percentages, true);
+                // percentage = Population.rand.nextDouble() * ((percentage + 5) - percentage) + percentage;
+                n = (int)Math.ceil(dna.c_genes.size() * AlotOfConstants.weightsResetRate);
                 n = (n == 0) ? 1 : n;
-
-                n2 = (int)Math.ceil(dna.n_genes.size() * (percentage / 100));
-                n2 = (n2 == 0) ? 1 : n2;
 
                 for (int i = 0; i < n; i++) {
 
@@ -134,21 +165,14 @@ public class Mutation {
 
                 }
 
-                for (int i = 0; i < n2; i++) {
-
-                    if(dna.n_genes.get(i).isHiddenInput()) dna.n_genes.get(i).setBias(Population.rand.nextDouble() * 60 - 30);
-
-                }
-
         }
-
-        Collections.sort(dna.n_genes);
         return;
         
     }
 
-    static void mutateWithNewNode(DNA dna) {
+    static boolean mutateWithNewNode(DNA dna) {
 
+        if(dna.n_genes.size() == AlotOfConstants.maxNetworkSize) return false;
         //here i am assuming the dna n genes are sorted according to their ids
         //also nodes from 0 -> (no of inputs + no of outputs) order is never changed
         Collections.sort(dna.n_genes);
@@ -181,26 +205,27 @@ public class Mutation {
 
         if(id1 == null) {
             Population.MAX_INNOV_ID++;
-            dna.c_genes.add(new Connection(in, newNode.getNode_id(), Population.rand.nextDouble() * 2 - 1, true, Population.MAX_INNOV_ID));
+            dna.c_genes.add(new Connection(in, newNode.getNode_id(), 1, true, Population.MAX_INNOV_ID));
             Population.connections.put(in+","+newNode.getNode_id(), Population.MAX_INNOV_ID);
         }
 
-        else dna.c_genes.add(new Connection(in, newNode.getNode_id(), Population.rand.nextDouble() * 2 - 1, true, id1));
+        else dna.c_genes.add(new Connection(in, newNode.getNode_id(), 1, true, id1));
 
 
         if(id2 == null) {
             Population.MAX_INNOV_ID++;
-            dna.c_genes.add(new Connection(newNode.getNode_id(), out, Population.rand.nextDouble() * 2 - 1, true, Population.MAX_INNOV_ID));
+            dna.c_genes.add(new Connection(newNode.getNode_id(), out, c.getWieght(), true, Population.MAX_INNOV_ID));
             Population.connections.put(newNode.getNode_id()+","+out, Population.MAX_INNOV_ID);
         }
 
-        else dna.c_genes.add(new Connection(newNode.getNode_id(), out, Population.rand.nextDouble() * 2 - 1, true, id2));
+        else dna.c_genes.add(new Connection(newNode.getNode_id(), out, c.getWieght(), true, id2));
 
 
         dna.n_genes.add(newNode);
 
         Collections.sort(dna.n_genes);
         Population.clearNodeOuts(dna.n_genes);
+        return true;
         
     }
 
@@ -408,28 +433,34 @@ public class Mutation {
 
     static void pickOneOfMutation(DNA dna) {
 
-        double[] mutatingPossibilities = {AlotOfConstants.probChangeWieght, AlotOfConstants.probNewConn, AlotOfConstants.probNewNode, AlotOfConstants.probRemoveConn, AlotOfConstants.probRemoveNode};
+        double[] mutatingPossibilities = {AlotOfConstants.probChangeBias,AlotOfConstants.probChangeWieght, AlotOfConstants.probNewConn, AlotOfConstants.probNewNode, AlotOfConstants.probRemoveConn, AlotOfConstants.probRemoveNode};
 
         int pick = Statistics.poolSelect(mutatingPossibilities);
         //System.out.println(pick+" picked");
         switch (pick) {
-            case 0: 
-                mutateWithWeightsAndBiases(dna);             
+
+            case 0:
+                mutateWithBiases(dna);
+                break;
+
+            case 1: 
+                mutateWithWeights(dna);             
                 break;
                 
-            case 1: //new conn         
+            case 2: //new conn         
                 mutateWithConnection(dna);            
                 break;
     
-            case 2: //new node
-                mutateWithNewNode(dna);
+            case 3: //new node
+                if(mutateWithNewNode(dna));
+                else mutateWithWeights(dna);
                 break;
     
-            case 3: //remove conn
+            case 4: //remove conn
                 mutateWithRemoveConnection(dna);
                 break;
     
-            case 4: //remove node
+            case 5: //remove node
                 mutateWithRemoveNode(dna);
             }
 
