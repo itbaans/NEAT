@@ -172,7 +172,7 @@ public class Mutation {
 
     static boolean mutateWithNewNode(DNA dna) {
 
-        if(dna.n_genes.size() == AlotOfConstants.maxNetworkSize) return false;
+        if(dna.n_genes.size() >= AlotOfConstants.maxNetworkSize) return false;
         //here i am assuming the dna n genes are sorted according to their ids
         //also nodes from 0 -> (no of inputs + no of outputs) order is never changed
         Collections.sort(dna.n_genes);

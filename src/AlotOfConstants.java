@@ -35,7 +35,7 @@ public class AlotOfConstants {
     public static float weightsResetRate = 0.1f;
     //public static float weightsLearningRate = 0.1f;
 
-    public static int maxNetworkSize = 10;
+    public static int maxNetworkSize = 5;
 
 
     public static double percToKill = 0.5;

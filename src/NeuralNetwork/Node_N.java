@@ -36,6 +36,10 @@ public  class Node_N implements Comparable<Node_N>, Cloneable {
         clearOuts();
     }
     
+    public void resetNodeVals(){
+        input = 0;
+        output = 0;
+    }
 
     public double getConnectionWeight(Node_N node) {
         if(outs.get(node) != null) return outs.get(node);

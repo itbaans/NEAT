@@ -103,7 +103,9 @@ public class Population {
 
         //     }
         // }
-
+        
+        double target = 3.999;
+        //getMaxFitnessDNA().getFitness() < target ||
         while(generations < 300) {
             //              
             //eval
@@ -145,11 +147,40 @@ public class Population {
 
             //printDNAfitnesses();
             printMaxFitnessDNA();
+            // if(generations == 299) {
+            //     for (DNA d : populationDNAs) {
+            //         d.printDNA_n();
+            //     }
+            // }
             System.out.println("generation: "+generations);
             
             generations++;
 
         }
+        //System.out.println("?");
+        // double[][] xor_inputs = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.}, {1.0, 1.0}};
+        // double[][] xor_outputs = {{0}, {1}, {1}, {0}};
+
+        clearNodeOuts(getMaxFitnessDNA().n_genes);
+        NueralNetwork nn = new NueralNetwork(getMaxFitnessDNA());
+
+        nn.setInputs(xor_inputs[0]);
+        System.out.println("Input: "+xor_inputs[0][0]+", "+xor_inputs[0][1]);
+        System.out.println("Output: "+nn.getOutputs()[0]);
+
+        nn.setInputs(xor_inputs[1]);
+        System.out.println("Input: "+xor_inputs[1][0]+", "+xor_inputs[1][1]);
+        System.out.println("Output: "+nn.getOutputs()[0]);
+
+        nn.setInputs(xor_inputs[2]);
+        System.out.println("Input: "+xor_inputs[2][0]+", "+xor_inputs[2][1]);
+        System.out.println("Output: "+nn.getOutputs()[0]);
+
+        nn.setInputs(xor_inputs[3]);
+        System.out.println("Input: "+xor_inputs[3][0]+", "+xor_inputs[3][1]);
+        System.out.println("Output: "+nn.getOutputs()[0]);
+        
+
 
     }
 
@@ -168,11 +199,29 @@ public class Population {
     public void printMaxFitnessDNA() {
 
         double max = Double.MIN_VALUE;
+        DNA d = null;
         for(DNA dna : populationDNAs) {
-            if(dna.getFitness() > max) max = dna.getFitness();
+            if(dna.getFitness() > max) {
+                max = dna.getFitness();
+                d = dna;
+            }
         }
         System.out.println("MAX FITNESS: "+max);
+        d.printDNA_n();
 
+    }
+
+    public DNA getMaxFitnessDNA() {
+
+        DNA d = null;
+        double max = Double.MIN_VALUE;
+        for(DNA dna : populationDNAs) {
+            if(dna.getFitness() > max) {
+                max = dna.getFitness();
+                d = dna;
+            }
+        }
+        return d;
     }
 
 

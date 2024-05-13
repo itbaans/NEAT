@@ -233,9 +233,17 @@ public class NueralNetwork {
 
         if(inputs.length != layers.get(0).size()) return;
 
+        for(int i = 0; i < layers.size(); i++){
+            for(int j = 0; j < layers.get(i).size(); j++){
+                layers.get(i).get(j).resetNodeVals();
+            }
+        }
+
         for(int t = 0; t < layers.get(0).size(); t++) {
             layers.get(0).get(t).setInput(inputs[t]);
         }
+
+
 
     }
 
