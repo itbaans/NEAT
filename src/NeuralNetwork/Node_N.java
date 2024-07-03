@@ -63,12 +63,6 @@ public  class Node_N implements Comparable<Node_N>, Cloneable {
 
     }
 
-    // @Override
-    // public String toString() {
-    //     return "Node_N [node_id=" + node_id + ", isHiddenInput=" + isHiddenInput + ", isHiddenOutput=" + isHiddenOutput
-    //             + "]";
-    // }
-
     public void clearOuts() {
         outs.clear();
     }

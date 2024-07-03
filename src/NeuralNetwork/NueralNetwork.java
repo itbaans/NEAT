@@ -243,8 +243,6 @@ public class NueralNetwork {
             layers.get(0).get(t).setInput(inputs[t]);
         }
 
-
-
     }
 
     public double[] getOutputs() {
