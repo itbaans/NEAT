@@ -27,11 +27,13 @@ public class BotServival extends JPanel implements KeyListener {
     boolean goalReached;
     boolean collided;
     boolean timeOut;
-
+    private DNA winner;
     Player[] players;
     int noOfPlayers;
     int currentPlayer = 0;
     int maxTicks = 900;
+    boolean forcedEnd = false;
+    public static int currentGen = 0;
 
     public BotServival(int plyrs) {
 
@@ -69,7 +71,6 @@ public class BotServival extends JPanel implements KeyListener {
 
     private void trainingLoop() {
 
-        int currentGen = 0;
         setPlayerBrains(Population.getPopulationDNAs());
 
         while(currentGen <= GameConstants.generations) {
@@ -81,6 +82,7 @@ public class BotServival extends JPanel implements KeyListener {
             while (currentPlayer < noOfPlayers) {
 
                 update();
+
                 if(currentGen % 10 == 0 && currentGen > 0) {
                     repaint();
 
@@ -110,9 +112,11 @@ public class BotServival extends JPanel implements KeyListener {
                     map.resetVisited();
 
                 }
-                //break;
+                // break;
 
             }
+
+            // break;
 
             try {
                 Population.evolve();
@@ -128,7 +132,64 @@ public class BotServival extends JPanel implements KeyListener {
             currentGen++;
             currentPlayer = 0;
             
-        }     
+        }
+
+        winner = Population.getMaxFitnessDNA();
+
+        for (int i = 0; i < players.length; i++) {
+            if(players[i].brain.getMyDNA() == winner) {
+                currentPlayer = i;
+                break;
+            }
+        }
+
+        winnerLoop();
+
+
+    }
+
+    public void winnerLoop() {
+
+        while(!forcedEnd) {
+
+            int ticks = 0;   
+
+            while (!goalReached && !timeOut && !collided) {
+
+                update();
+                repaint();
+
+                try {
+                    Thread.sleep(DELAY);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                ticks++;
+                
+            
+                if (ticks >= maxTicks) {
+                    //System.out.println("Maximum time reached. Ending game loop.");
+                    timeOut = true;
+                    ticks = 0;
+                }
+
+                if(goalReached || timeOut || collided) {
+
+                    goalReached = false;
+                    timeOut = false;
+                    collided = false;
+                    map.resetVisited();
+                    map.generateMap();
+                    players[currentPlayer] = new Player(map.start.x * GameConstants.tileSize, map.start.y * GameConstants.tileSize);
+                    players[currentPlayer].setBrain(winner);
+
+                }
+                // break;
+
+            }
+            
+        }
     }
 
     private double getFitness(boolean goal, boolean collision, boolean timeout, int timeTaken) {
@@ -139,12 +200,12 @@ public class BotServival extends JPanel implements KeyListener {
         double revistiWeight = 0.003;
         double progressReward = 200;
 
-        revistedPenalty = Math.max(Math.exp(players[currentPlayer].reVisitedTiles) * revistiWeight, 800);
+        revistedPenalty = Math.min(Math.exp(players[currentPlayer].reVisitedTiles) * revistiWeight, 2000);
 
         if(goal) { 
         
             double timeFactor = 1 - (timeTaken / maxTicks);
-            return baseFitness + (timeFactor * 1000) + 2000 - (revistedPenalty);
+            return baseFitness + (timeFactor * 1000) + 2000 ;
         }
 
         else if (collision) {
@@ -154,10 +215,10 @@ public class BotServival extends JPanel implements KeyListener {
 
             double progressFactor = 0;
             if(initialDistanceToGaol - currentDistToGoal > 0) {
-                progressFactor = 1 - ((initialDistanceToGaol - currentDistToGoal) / initialDistanceToGaol);
+                progressFactor = (initialDistanceToGaol - currentDistToGoal) / initialDistanceToGaol;
             }
 
-            return Math.max((baseFitness + (progressFactor * progressReward)) - collisionPenalty, 10);
+            return Math.max((baseFitness + (progressFactor * progressReward) + (timeTaken / maxTicks) * 100) - collisionPenalty, 10);
 
         }
 
@@ -167,12 +228,10 @@ public class BotServival extends JPanel implements KeyListener {
 
             double progressFactor = 0;
             if(initialDistanceToGaol - currentDistToGoal > 0) {
-                progressFactor = 1 - ((initialDistanceToGaol - currentDistToGoal) / initialDistanceToGaol);
+                progressFactor = (initialDistanceToGaol - currentDistToGoal) / initialDistanceToGaol;
             }
 
-            double timeFactor = timeTaken / maxTicks;
-
-            return Math.max((baseFitness + (progressFactor * progressReward)) + (timeFactor * 100) - (revistedPenalty), 10);
+            return Math.max((baseFitness + (progressFactor * progressReward)) - (revistedPenalty), 10);
 
         }
 
@@ -183,39 +242,6 @@ public class BotServival extends JPanel implements KeyListener {
         return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
     }
 
-
-    // public void play() {
-
-    //     Instant startTime = Instant.now();
-
-    //     while (currentPlayer < noOfPlayers) {
-
-    //         update();
-
-    //         try {
-    //             Thread.sleep(DELAY);
-    //         } catch (InterruptedException e) {
-    //             e.printStackTrace();
-    //         }
-            
-    //         Instant currentTime = Instant.now();
-    //         long elapsedSeconds = Duration.between(startTime, currentTime).getSeconds();
-
-    //         if (elapsedSeconds >= maxSeconds) {
-    //             //System.out.println("Maximum time reached. Ending game loop.");
-    //             end = true;
-    //         }
-
-    //         if(end) {
-    //             startTime = Instant.now();
-    //             currentPlayer++;
-    //             end = false;
-    //             if(currentPlayer < noOfPlayers) players[currentPlayer] = new Player(map.start.x * GameConstants.tileSize, map.start.y * GameConstants.tileSize);
-    //         }
-    //         //break;            
-    //     }
-    // }
-
     public void getBrainSignal() {
 
         ArrayList<Double> inps = new ArrayList<>();
@@ -225,10 +251,17 @@ public class BotServival extends JPanel implements KeyListener {
             inps.add(players[currentPlayer].whatTracersSee[1][i]);
         }
 
-        inps.add(100.0);
+        double[] temp = getDirectionToGoal(new Point((int)players[currentPlayer].pos.getX(), (int)players[currentPlayer].pos.getY()), new Point(map.goal.x * GameConstants.tileSize, map.goal.y * GameConstants.tileSize));
+
+        inps.add(temp[0]);
+        inps.add(temp[1]);
         inps.add(players[currentPlayer].pos.distance(Vector2D.of(map.goal.x * GameConstants.tileSize, map.goal.y * GameConstants.tileSize)));
 
         double[] inputs = inps.stream().mapToDouble(Double::doubleValue).toArray();
+
+        // for(double d : inputs) {
+        //     System.out.print(d+" ");
+        // }
 
         // double[] inputs = new double[players[currentPlayer].whatTracersSee[0].length * players[currentPlayer].whatTracersSee.length];
 
@@ -243,6 +276,27 @@ public class BotServival extends JPanel implements KeyListener {
         else if(isMax(outputs, outputs[2])) players[currentPlayer].steerRight();
         //else do nothing
 
+    }
+
+    public static double[] getDirectionToGoal(Point player, Point goal) {
+        // Calculate direction vector
+        double dx = goal.x - player.x;
+        double dy = goal.y - player.y;
+        
+        // Calculate magnitude of the vector
+        double magnitude = Math.sqrt(dx*dx + dy*dy);
+        
+        // Normalize the vector
+        // If magnitude is 0, return (0, 0) to avoid division by zero
+        if (magnitude == 0) {
+            return new double[]{0, 0};
+        }
+        
+        double normalizedX = dx / magnitude;
+        double normalizedY = dy / magnitude;
+        
+        // Return normalized direction
+        return new double[]{normalizedX, normalizedY};
     }
 
     private boolean isMax(double[] arr, double v) {
@@ -290,7 +344,7 @@ public class BotServival extends JPanel implements KeyListener {
 
             if(players[currentPlayer].touchesTile(players[currentPlayer].pos, players[currentPlayer].tracers[i], map.goal.x * GameConstants.tileSize, map.goal.y * GameConstants.tileSize, GameConstants.goalArea * GameConstants.tileSize)) {
                 double[] objectNDist = new double[2];
-                objectNDist[0] = 0;
+                objectNDist[0] = 100;
                 objectNDist[1] = players[currentPlayer].pos.distance(Vector2D.of(map.goal.x * GameConstants.tileSize, map.goal.y * GameConstants.tileSize));
                 stuffImSeing.add(objectNDist);
             }
@@ -300,7 +354,7 @@ public class BotServival extends JPanel implements KeyListener {
                     if(t.isCollision()) {
                         if(players[currentPlayer].touchesTile(players[currentPlayer].pos, players[currentPlayer].tracers[i], t.pos.x, t.pos.y, GameConstants.tileSize)) {
                             double[] objectNDist = new double[2];
-                            objectNDist[0] = 100;
+                            objectNDist[0] = -100;
                             objectNDist[1] = players[currentPlayer].pos.distance(Vector2D.of(t.pos.x, t.pos.y));
                             stuffImSeing.add(objectNDist);
                         }
@@ -319,16 +373,7 @@ public class BotServival extends JPanel implements KeyListener {
         }
 
         getBrainSignal();
-
-        // myNetwork.setInputs(player.whatTracersSee[0]);
-        // if(myNetwork.getOutputs()[0] > myNetwork.getOutputs()[1]) player.steerLeft();
-        // else player.steerRight();
-
-        // for(int i = 0; i < players[currentPlayer].tracers.length; i++) {
-        //     System.out.println(players[currentPlayer].whatTracersSee[0][i] +"  "+players[currentPlayer].whatTracersSee[1][i]);
-        // }
-        // System.out.println("--------------");
-        //System.out.println(player.pos.getX() +" "+player.pos.getY());
+        
     }
 
     @Override
@@ -347,21 +392,21 @@ public class BotServival extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         
-        // int keyCode = e.getKeyCode();
-        // switch(keyCode) {
-        //     // case KeyEvent.VK_W:
-        //     //     player.steerUp();
-        //     //     break;
-        //     case KeyEvent.VK_A:
-        //         players[currentPlayer].steerLeft();
-        //         break;
-        //     // case KeyEvent.VK_S:
-        //     //     player.steerDown();
-        //     //     break;
-        //     case KeyEvent.VK_D:
-        //         players[currentPlayer].steerRight();
-        //         break;
-        // }
+        int keyCode = e.getKeyCode();
+        switch(keyCode) {
+            // case KeyEvent.VK_W:
+            //     player.steerUp();
+            //     break;
+            case KeyEvent.VK_A:
+                forcedEnd = true;
+                break;
+            // // case KeyEvent.VK_S:
+            // //     player.steerDown();
+            // //     break;
+            // case KeyEvent.VK_D:
+            //     players[currentPlayer].steerRight();
+            //     break;
+        }
 
     }
 

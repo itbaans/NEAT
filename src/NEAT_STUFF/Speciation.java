@@ -32,6 +32,18 @@ public class Speciation {
         //       DNA dna2 = innerEntry.getKey();
         //       Double distance = innerEntry.getValue();
         //       System.out.println("Distance between " + dna1.id + " and " + dna2.id + ": " + distance);
+
+        //     //   System.out.println("DNA 1");
+        //     //   for(Connection c : dna1.c_genes) {
+        //     //     System.out.print(c.getInnov()+" ");
+        //     //   }
+        //     //   System.out.println();
+
+        //     //   System.out.println("DNA 2");
+        //     //   for(Connection c : dna2.c_genes) {
+        //     //     System.out.print(c.getInnov()+" ");
+        //     //   }
+
         //     }
         // }
 
@@ -222,6 +234,11 @@ public class Speciation {
             }
 
         }
+        
+        // System.out.println(dna1.id +" vs "+dna2.id);
+        // System.out.println("Dis " +disJoints);
+        // System.out.println("EXCES "+excess);
+        // System.out.println(sumOfWeightDiffs);
 
         double avgWeightDiffs = sumOfWeightDiffs / (longerLength + shorterLength);
 

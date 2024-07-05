@@ -1,8 +1,12 @@
 package NEAT_STUFF;
+
+import TheGame.BotServival;
+import TheGame.GameConstants;
+
 public class AlotOfConstants {
 
     public static int popSize = 30;
-    public static int inputs = 22;
+    public static int inputs = 23;
     public static int outputs = 3;
 
     public static boolean isUNIFORM = false;
@@ -14,11 +18,11 @@ public class AlotOfConstants {
     public static double MIN_SCALING = 0.9;
 
     //for sppeciation
-    public static double COMP_THRSHOLD = 1.5;
+    public static double COMP_THRSHOLD = 2;
 
-    public static double cForDisjoint = 1;
-    public static double cForExcess = 1;
-    public static double cForWeights = 0.3;
+    public static double cForDisjoint = 2;
+    public static double cForExcess = 2;
+    public static double cForWeights = 0.7;
 
     //clamping values depends on activation function according to GPT
     //need more research on this.......
@@ -46,18 +50,29 @@ public class AlotOfConstants {
     private static final double MIN_PROB = 0.05; // Minimum probability for any operation
     private static double lastAverageFitness = 0;
 
+    private static final double MIN_THRESHOLD = 1.5;
+    private static final double MAX_THRESHOLD = 3.0;
+    private static final double SP_ADJUSTMENT_RATE = 0.2;
+    private static final int TARGET_SPECIES = 5;
+
     public static void updateProbabilities(double currentAverageFitness) {
         double fitnessChange = currentAverageFitness - lastAverageFitness;
         lastAverageFitness = currentAverageFitness;
 
-        if (fitnessChange > 0) {
-            // Fitness is increasing, favor weight and bias changes
-            adjustProbabilities(true);
-        } else if (fitnessChange < 0) {
-            // Fitness is decreasing, favor structural changes
+        if(BotServival.currentGen / GameConstants.generations < 0.5 && Population.getAvgFitness() < 1000) {
             adjustProbabilities(false);
         }
-        // If fitnessChange == 0, we don't change probabilities
+
+        else {
+            if (fitnessChange > 0) {
+                // Fitness is increasing, favor weight and bias changes
+                adjustProbabilities(true);
+            } else if (fitnessChange < 0) {
+                // Fitness is decreasing, favor structural changes
+                adjustProbabilities(false);
+            }
+            // If fitnessChange == 0, we don't change probabilities
+        }
 
         normalizeProbabilities();
     }
@@ -107,6 +122,19 @@ public class AlotOfConstants {
         probChangeWieght /= total;
         probChangeBias /= total;
     }
+
+    public static void adjustSpeciationThreshold(int speciesCount) {
+
+        if (speciesCount > TARGET_SPECIES) {
+            COMP_THRSHOLD += SP_ADJUSTMENT_RATE;
+        } else if (speciesCount < TARGET_SPECIES) {
+            COMP_THRSHOLD -= SP_ADJUSTMENT_RATE;
+        }
+        
+        // Ensure threshold stays within bounds
+        COMP_THRSHOLD = Math.max(MIN_THRESHOLD, Math.min(MAX_THRESHOLD, COMP_THRSHOLD));
+    }
+
 
 
 

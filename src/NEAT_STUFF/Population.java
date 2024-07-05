@@ -1,5 +1,7 @@
 package NEAT_STUFF;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -36,7 +38,8 @@ public class Population {
         no_of_inputs = ins;
         no_of_outputs = outs;
 
-        startOfTimes();
+        //startOfTimes();
+        startOfTimesRandomly();
 
     }
 
@@ -112,7 +115,10 @@ public class Population {
         AlotOfConstants.updateProbabilities(getAvgFitness());
 
         CrossOver.theKillingSpree();
-        CrossOver.theReproduction();       
+        CrossOver.theReproduction();
+        
+        AlotOfConstants.adjustSpeciationThreshold(species.size());
+        
         printMaxFitnessDNA();
     }
 
@@ -343,15 +349,61 @@ public class Population {
 
             for(int o = 0; o < no_of_outputs; o++) {
                 n_genes.add(new Node_N((o + 1) + no_of_inputs, true, false));
-            }   
-
-            Enumeration<String> keys = connections.keys();
-            while(keys.hasMoreElements()) {
-                String key = keys.nextElement();
-                String[] split = key.split(",");
-                c_genes.add(new Connection(Integer.parseInt(split[0]), Integer.parseInt(split[1]), rand.nextDouble() * 2 - 1, true, connections.get(key)));
-                    
             }
+            
+            int min = no_of_inputs + 1;
+            int max = no_of_inputs + no_of_outputs;
+            ArrayList<Integer> temp = new ArrayList<>();
+            int t = rand.nextInt(10, 15);
+
+            for (int i = 0; i < no_of_inputs; i++) {
+
+                int r = rand.nextInt(min, max + 1);
+                
+                Integer id = connections.get(i+1+","+r);
+
+                if(id == null) {
+                    MAX_INNOV_ID++;
+                    temp.add(MAX_INNOV_ID);
+
+                    c_genes.add(new Connection(i + 1, r, rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID));
+                    Population.connections.put(i+1+","+r, Population.MAX_INNOV_ID);
+                }
+
+                else if(!temp.contains(id)) {
+                    temp.add(id);
+                    c_genes.add(new Connection(i + 1, r, rand.nextDouble() * 2 - 1, true, id));
+                }              
+            }
+
+            for(int j = 0; j < t; j++) {
+
+                int inp = rand.nextInt(1, no_of_inputs + 1);
+                int out = rand.nextInt(min, max + 1);
+
+                Integer id = connections.get(inp+","+out);
+
+                if(id == null) {
+                    MAX_INNOV_ID++;
+                    temp.add(MAX_INNOV_ID);
+
+                    c_genes.add(new Connection(inp, out, rand.nextDouble() * 2 - 1, true, MAX_INNOV_ID));
+                    Population.connections.put(inp+","+out, Population.MAX_INNOV_ID);
+                }
+
+                else if(!temp.contains(id)) {
+                    temp.add(id);
+                    c_genes.add(new Connection(inp + 1, out, rand.nextDouble() * 2 - 1, true, id));
+                }
+
+            }
+
+            // Collections.sort(c_genes);
+            // for(Connection c : c_genes) {
+            //     System.out.print(c.getInnov()+" ");
+            // }
+            // System.out.println();
+            // System.out.println("*************");
 
             DNA_ID++;
             populationDNAs[p] = new DNA(n_genes, c_genes);
