@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 
+import javax.swing.GroupLayout.Alignment;
+
 import NeuralNetwork.Connection;
 import NeuralNetwork.DNA;
 import NeuralNetwork.Node_N;
@@ -35,18 +37,6 @@ public class Population {
         no_of_outputs = outs;
 
         startOfTimes();
-
-    }
-
-    //testing multiple dnas
-    public Population(int popSize) throws CloneNotSupportedException {
-
-        populationSize = popSize;
-        populationDNAs = new DNA[populationSize];
-        no_of_inputs = 3;
-        no_of_outputs = 3;
-
-        startSimulation();
 
     }
 
@@ -115,9 +105,14 @@ public class Population {
     }
 
     public static void evolve() throws CloneNotSupportedException {
+
+        Speciation.printSpecies();
         Speciation.updateSpeciesAvgFitness();
+
+        AlotOfConstants.updateProbabilities(getAvgFitness());
+
         CrossOver.theKillingSpree();
-        CrossOver.theReproduction();
+        CrossOver.theReproduction();       
         printMaxFitnessDNA();
     }
 
@@ -148,7 +143,19 @@ public class Population {
 
     }
 
-    public DNA getMaxFitnessDNA() {
+    public static double getAvgFitness() {
+
+        double avg = 0;
+
+        for (DNA dna : populationDNAs){
+            avg += dna.getFitness();
+        }
+
+        return avg / populationSize;
+
+    }
+
+    public static DNA getMaxFitnessDNA() {
 
         DNA d = null;
         double max = Double.MIN_VALUE;
@@ -160,43 +167,6 @@ public class Population {
         }
         return d;
     }
-
-
-    public void startSimulation() throws CloneNotSupportedException {
-
-        startOfTimes();
-
-        //1. loop to give dnas to players
-
-        int count = 0;
-
-        //2. games are played (for some amount of time)
-        while (count < 10) {
-
-            System.out.println("******");
-            Speciation.printSpecies();
-            System.out.println("******");
-
-            for(int i = 0; i < populationSize; i++) {
-                populationDNAs[i].setFitness(rand.nextDouble() * 50);
-            }
-    
-            Speciation.updateSpeciesAvgFitness();
-            //3. cross overs are donee 
-            CrossOver.theKillingSpree();
-            CrossOver.theReproduction();
-    
-            count++;
-
-        }
-
-        //4. mutations are done
-
-        //5. repeat to step 1
-
-
-    }
-
     
 
     public void testMutatingWieghts(DNA dna) {
@@ -340,6 +310,39 @@ public class Population {
 
             for(int o = 0; o < no_of_outputs; o++) {
                 n_genes.add(new Node_N((o+ 1) + no_of_inputs, true, false));
+            }   
+
+            Enumeration<String> keys = connections.keys();
+            while(keys.hasMoreElements()) {
+                String key = keys.nextElement();
+                String[] split = key.split(",");
+                c_genes.add(new Connection(Integer.parseInt(split[0]), Integer.parseInt(split[1]), rand.nextDouble() * 2 - 1, true, connections.get(key)));
+                    
+            }
+
+            DNA_ID++;
+            populationDNAs[p] = new DNA(n_genes, c_genes);
+            populationDNAs[p].id = DNA_ID;
+
+        }
+
+        Speciation.speciate();
+    }
+
+    private void startOfTimesRandomly() {
+
+        for (int p = 0; p < populationSize; p++) {
+
+            LinkedList<Node_N> n_genes = new LinkedList<>();
+            LinkedList<Connection> c_genes = new LinkedList<>();
+
+            for (int i = 0; i < no_of_inputs; i++) {
+                n_genes.add(new Node_N(i + 1, false, true));      
+
+            }
+
+            for(int o = 0; o < no_of_outputs; o++) {
+                n_genes.add(new Node_N((o + 1) + no_of_inputs, true, false));
             }   
 
             Enumeration<String> keys = connections.keys();

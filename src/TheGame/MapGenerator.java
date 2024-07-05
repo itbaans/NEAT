@@ -109,6 +109,14 @@ public class MapGenerator {
 
     }
 
+    public void resetVisited() {
+        for (int i = 0; i < tiles.length; i++) {
+            for (int j = 0; j < tiles[0].length; j++) {
+                tiles[i][j].isVisited = false;
+            }
+        }
+    }
+
     private void automata() {
 
         for(int i = 0; i < iterations; i++) {
@@ -120,7 +128,7 @@ public class MapGenerator {
                 for (int k = 0; k < width; k++) {
 
                     //true means floor
-                    if(j < height - 1 && k < width - 1 && j > 0 && k > 0)
+                    if(j < height - 1 && k < width - 1 && j > 0 && k > 0) //tempGrid[j][k] = true;
                         if(countNeighbours(j, k, theMap) <= birthRate || startCheck(j, k) || goalCheck(j, k)) tempGrid[j][k] = true;
                     else tempGrid[j][k] = false;
                             

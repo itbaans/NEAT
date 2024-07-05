@@ -143,7 +143,6 @@ public class CrossOver {
 
             Speciation.putInSpecieByRepresentative(child);
 
-
             Speciation.updateSpeciesAvgFitness();
             sumOfAvgFitness = 0;
 

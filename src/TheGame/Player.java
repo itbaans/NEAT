@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 //import java.util.Random;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 
 import org.apache.commons.geometry.euclidean.twod.Vector2D;
 
@@ -28,6 +29,7 @@ public class Player {
     double[][] whatTracersSee = new double[2][10];
     float angleThreshold = 0.01f;
     NueralNetwork brain;
+    int reVisitedTiles = 0;
 
     public Player(int x, int y) {
 

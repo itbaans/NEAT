@@ -2,7 +2,7 @@ package NeuralNetwork;
 import java.util.Hashtable;
 import java.util.Random;
 
-import org.apache.commons.math4.legacy.genetics.Population;
+//import org.apache.commons.math4.legacy.genetics.Population;
 
 public  class Node_N implements Comparable<Node_N>, Cloneable {
 

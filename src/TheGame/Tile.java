@@ -11,6 +11,8 @@ public class Tile {
         return pos;
     }
 
+    boolean isVisited = false;
+
     public void setPos(Point pos) {
         this.pos = pos;
     }

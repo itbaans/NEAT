@@ -69,6 +69,7 @@ public class Speciation {
         for(Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
             Specie s = entry.getValue();
             double val = calculateCompatibilityDistance(individual, s.getRepresentative());
+            //System.out.println("Distance: "+val);
             //System.out.println(val);
             if(val < AlotOfConstants.COMP_THRSHOLD) {
                 found = true;
