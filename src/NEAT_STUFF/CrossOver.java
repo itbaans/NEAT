@@ -1,7 +1,9 @@
 package NEAT_STUFF;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -12,150 +14,248 @@ import NeuralNetwork.Node_N;
 
 public class CrossOver {
 
-    static int theChange = (int)((double)Population.populationDNAs.length * AlotOfConstants.percToKill);
+    private static int currentStage;
+    static int stagnantGenerations;
+    static Random rand = new Random();
 
+    private static float sizeWeight = 2;
+    private static float fitnessWeight = 1.5f;
 
-    public static void theKillingSpree() {
+    public static void theRealEvolution() {
 
-        double sumOfAvgFitness = 0;
+        Population.updateMaxFitness();
+        checkStageTransition();
 
-        for(Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
-
-            sumOfAvgFitness += entry.getValue().getAvgFitness();
-
+        switch (currentStage) {
+            case 1:
+                stageOneEvolution();
+                break;
+            case 2:
+                stageTwoEvolution();
+                break;
+            case 3:
+                stageThreeEvolution();
+                break;
         }
+
+    }
+
+    private static void stageOneEvolution() {
 
         Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
 
-        double[] spPossiblities = new double[keys.length];
+        for(Integer k : keys) {
 
-        for(int c = 0; c < theChange; c++) {
-
-            keys = Population.species.keySet().toArray(new Integer[0]);
-
-            spPossiblities = new double[keys.length];
-
-            for(int i = 0; i < keys.length; i++) {
-
-                double avgFit = Population.species.get(keys[i]).getAvgFitness();
-                spPossiblities[i] = (avgFit / sumOfAvgFitness) * 100;
-
-            }
-
-            int selected = Statistics.theCollectionPikcerGetInd(spPossiblities, true);
-
-            Specie selectedSp = Population.species.get(keys[selected]);
-
-            Collections.sort(selectedSp.list);
-
-            for(int p = 0; p < Population.populationDNAs.length; p++) {
-                if(Population.populationDNAs[p] == selectedSp.list.get(0)) {
-                    Population.populationDNAs[p] = null;
-                    break;
-                }         
-            }
-
-            selectedSp.list.remove(0);
-            if(selectedSp.list.isEmpty()) Population.species.remove(keys[selected]);
-            else selectedSp.setReprentative();
-
-            Speciation.updateSpeciesAvgFitness();
-            sumOfAvgFitness = 0;
-            
-            for(Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
-
-                sumOfAvgFitness += entry.getValue().getAvgFitness();
-
-            }
+            freeEvolution(Population.species.get(k));
 
         }
 
     }
 
-    public static void theReproduction() throws CloneNotSupportedException {
+    private static void stageTwoEvolution() {
 
-        double sumOfAvgFitness = 0;
+        theKillingSpree();
 
-        for(Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
+    }
+    private static void stageThreeEvolution() {
 
-            sumOfAvgFitness += entry.getValue().getAvgFitness();
+        sizeWeight = 1.5f;
+        fitnessWeight = 2.5f;
+        AlotOfConstants.crossSpRate = 0.08f;
+        
+        theKillingSpree();
 
+    }
+
+
+    private static void checkStageTransition() {
+        if (currentStage == 1 && (Population.currentGen > 50 || stagnantGenerations > 10)) {
+            currentStage = 2;
+            System.out.println("Transitioning to Stage 2");
+        } else if (currentStage == 2 && (Population.currentGen > 150 || stagnantGenerations > 20)) {
+            currentStage = 3;
+            System.out.println("Transitioning to Stage 3");
         }
+    }
+
+    private static void theKillingSpree() {
 
         Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
 
-        double[] spPossiblities = new double[keys.length];
+        Speciation.updateSpeciesAvgFitness();
 
-        for(int c = 0; c < theChange; c++) {
+        double totalSpecFitn = 0;
+        for(int i = 0; i < keys.length; i++) {
+            totalSpecFitn += Population.species.get(keys[i]).getAvgFitness();
+        }
 
-            keys = Population.species.keySet().toArray(new Integer[0]);
+        double[] elimationPossibilities = new double[keys.length];
 
-            spPossiblities = new double[keys.length];
+        for(int i = 0; i < elimationPossibilities.length; i++) {
+            elimationPossibilities[i] = calculateEliminationProbability(Population.species.get(keys[i]), totalSpecFitn);
+        }
 
-            for(int i = 0; i < keys.length; i++) {
+        double[] addingPossibilities = new double[keys.length];
+        for(int i = 0; i < elimationPossibilities.length; i++) {
+            addingPossibilities[i] = calculateAdditionProbability(Population.species.get(keys[i]), totalSpecFitn);
+        }
 
-                double avgFit = Population.species.get(keys[i]).getAvgFitness();
-                spPossiblities[i] = (avgFit / sumOfAvgFitness) * 100;
+        int maxKills = (int)(rand.nextDouble(AlotOfConstants.minKill, AlotOfConstants.maxKill)) * AlotOfConstants.popSize;
 
-            }
+        int actualKills = 0;
 
-            int selected = Statistics.theCollectionPikcerGetInd(spPossiblities, false);
+        for(int i = 0; i < maxKills; i++) {
 
-            Specie selectedSp = Population.species.get(keys[selected]);
+            int selected = Statistics.theCollectionPikcerGetInd(elimationPossibilities, false);
+            if(killMember(Population.species.get(selected), selected)) actualKills++;
 
-            double[] parentPossibilities = new double[selectedSp.list.size()];
+        }
 
-            double sumOfParFit = 0;
-            for(DNA d : selectedSp.list){
-                sumOfParFit += d.getFitness();
-            }
+        theReproduction(addingPossibilities, actualKills);
 
-            for(int i = 0; i < selectedSp.list.size(); i++) {
-                parentPossibilities[i] = selectedSp.list.get(i).getFitness() / sumOfParFit;
-            }
+    }
 
-            DNA par1 = getContender(parentPossibilities, selectedSp);
-            DNA par2 = getContender(parentPossibilities, selectedSp);
+    private static void crossOfDiffSpecies(Specie s1, Specie s2) {
 
-            // System.out.println("par2 bfr: ");
-            // for(Node_N t : par2.n_genes){
-            //     System.out.println(t.getBias());
-            // }
+       DNA p1 = getContender(getPossibilities(s1), s1.list);
+       DNA p2 = getContender(getPossibilities(s2), s2.list);
 
-            DNA child = actualCrossOver(par1, par2);
+       DNA child;
+       try {
+           child = actualCrossOver(p1, p2);
+           Mutation.pickOneOfMutation(child);
+           Speciation.putInSpecieByRepresentative(child);
+       } catch (CloneNotSupportedException e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
+
+    }
+
+    private static void theReproduction(double[] possiblities, int toAdd) {
+
+        Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
+
+        for(int i = 0; i < toAdd; i++) {
+
+            if(Math.random() > AlotOfConstants.crossSpRate) {
+                int selected = Statistics.theCollectionPikcerGetInd(possiblities, false);
             
-            //child.printDNA();
-            //System.out.println("**");
-            Mutation.pickOneOfMutation(child);
-            //child.printDNA();
-
-            // System.out.println("par2 aftr: ");
-            // for(Node_N t : par2.n_genes){
-            //     System.out.println(t.getBias());
-            // }
-
-            for(int p = 0; p < Population.populationDNAs.length; p++) {
-                if(Population.populationDNAs[p] == null) {
-                    Population.populationDNAs[p] = child;
-                    break;
+                if(Population.species.get(selected) != null) {
+                    addMember(Population.species.get(selected));
+                }
+                else {
+                    int k = rand.nextInt(keys.length);
+                    addMember(Population.species.get(keys[k]));
                 }
             }
-
-            Speciation.putInSpecieByRepresentative(child);
-
-            Speciation.updateSpeciesAvgFitness();
-            sumOfAvgFitness = 0;
-
-            for(Map.Entry<Integer, Specie> entry : Population.species.entrySet()) {
-
-                sumOfAvgFitness += entry.getValue().getAvgFitness();
-
+            else {
+                crossOfDiffSpecies(Population.species.get(keys[rand.nextInt(keys.length)]), Population.species.get(keys[rand.nextInt(keys.length)]));
             }
 
         }
 
     }
 
+    private static double calculateEliminationProbability(Specie specie, double totalFitness) {
+        double sizeFactor = (specie.list.size() / (double) AlotOfConstants.popSize) * sizeWeight;
+        double fitnessFactor = (1 - (specie.getAvgFitness() / totalFitness)) * fitnessWeight;
+        return (sizeFactor + fitnessFactor) / 2;
+    }
+
+    private static double calculateAdditionProbability(Specie specie, double totalFitness) {
+        double sizeFactor = 1 - (specie.list.size() / (double) AlotOfConstants.popSize);
+        double fitnessFactor = (specie.getAvgFitness() / totalFitness);
+        return (sizeFactor + fitnessFactor) / 2;
+    }
+
+    private static boolean killMember(Specie s, int key) {
+
+        if(s.age >= AlotOfConstants.spMaturity) {
+
+            Collections.sort(s.list);
+
+            if(s.list.get(0).getFitness() < AlotOfConstants.goodFitnessThreshold) {
+                s.list.remove(0);
+                if(s.list.isEmpty()) Population.species.remove(key);
+                else s.setReprentative();
+                return true;
+            }
+        }
+
+        else {
+            freeEvolution(s);
+        }
+
+        return false;
+ 
+    }
+
+    private static void addMember(Specie s) {
+
+        double[] possiblities = getPossibilities(s);
+
+        DNA p1 = getContender(possiblities, s.list);
+        DNA p2 = getContender(possiblities, s.list);
+
+        DNA child;
+        try {
+            child = actualCrossOver(p1, p2);
+            Mutation.pickOneOfMutation(child);
+            Speciation.putInSpecieByRepresentative(child);
+        } catch (CloneNotSupportedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    private static double[] getPossibilities(Specie s) {
+
+        double sumOfFitn = s.list.stream().mapToDouble(DNA::getFitness).sum();
+        double[] possiblities = new double[s.list.size()];
+
+        for(int i = 0; i < possiblities.length; i++) {
+            possiblities[i] = s.list.get(i).getFitness() / sumOfFitn;
+        }
+
+        return possiblities;
+    }
+
+    
+    private static void freeEvolution(Specie s) {
+
+        List<DNA> childs = new ArrayList<>();
+
+        double sumOfFitn = s.list.stream().mapToDouble(DNA::getFitness).sum();
+
+        double[] possiblities = new double[s.list.size()];
+
+        for(int i = 0; i < possiblities.length; i++) {
+            possiblities[i] = s.list.get(i).getFitness() / sumOfFitn;
+        }
+
+        for (int i = 0; i < s.list.size(); i++) {
+            DNA p1 = getContender(possiblities, s.list);
+            DNA p2 = getContender(possiblities, s.list);
+
+            try {
+                DNA child = actualCrossOver(p1, p2);
+                Mutation.pickOneOfMutation(child);
+                if(Speciation.calculateCompatibilityDistance(child, s.getRepresentative()) <= AlotOfConstants.COMP_THRSHOLD)
+                    childs.add(child);
+                else {
+                    Speciation.putInSpecieByRepresentative(child);
+                }
+            } catch (CloneNotSupportedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        s.list = childs;
+        s.setReprentative();
+    }
 
     private static DNA actualCrossOver(DNA p1, DNA p2) throws CloneNotSupportedException {
 
@@ -248,12 +348,12 @@ public class CrossOver {
 
     }
 
-    private static DNA getContender(double[] possiblities, Specie s) {
+    private static DNA getContender(double[] possiblities, List<DNA> members) {
 
         int id = Statistics.poolSelect(possiblities);
-        DNA con1 = s.list.get(id);
+        DNA con1 = members.get(id);
         id = Statistics.poolSelect(possiblities);
-        DNA con2 = s.list.get(id);
+        DNA con2 = members.get(id);
 
         Random rand = new Random();
         

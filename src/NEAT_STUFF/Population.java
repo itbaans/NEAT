@@ -1,5 +1,6 @@
 package NEAT_STUFF;
 
+import java.awt.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -29,6 +30,8 @@ public class Population {
     static int SPECIE_ID;
     static int DNA_ID;
     static Map<Integer, Specie> species = new HashMap<>();
+    static double maxFitness;
+    public static int currentGen = 0;
 
     public Population(int size, int ins, int outs) {
 
@@ -46,7 +49,6 @@ public class Population {
     public void XORtest() throws CloneNotSupportedException {
 
         //NueralNetwork[] NNs = new NueralNetwork[populationSize];
-        startOfTimes();
 
         int generations = 0;
         double[][] xor_inputs = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.}, {1.0, 1.0}};
@@ -75,8 +77,7 @@ public class Population {
             Speciation.updateSpeciesAvgFitness();
             //Speciation.printSpecies();
             
-            CrossOver.theKillingSpree();
-            CrossOver.theReproduction();
+            evolve();
             //printDNAfitnesses();
             printMaxFitnessDNA();
             System.out.println("generation: "+generations);
@@ -114,12 +115,40 @@ public class Population {
 
         AlotOfConstants.updateProbabilities(getAvgFitness());
 
-        CrossOver.theKillingSpree();
-        CrossOver.theReproduction();
+        CrossOver.theRealEvolution();
         
         AlotOfConstants.adjustSpeciationThreshold(species.size());
+
+        currentGen++;
+        updateSpecieAges();
+        updatePopulation();
         
         printMaxFitnessDNA();
+    }
+
+    private static void updatePopulation() {
+
+        Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
+
+        ArrayList<DNA> newPOP = new ArrayList<>();
+
+        for(Integer k : keys) {
+            newPOP.addAll(species.get(k).list);
+        }
+
+        populationDNAs = newPOP.toArray(new DNA[populationSize]);
+
+    }
+
+    private static void updateSpecieAges() {
+
+        Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
+
+        for(Integer k : keys) {
+            species.get(k).age++;
+        }
+
+
     }
 
     public void printDNAfitnesses() {
@@ -172,6 +201,20 @@ public class Population {
             }
         }
         return d;
+    }
+
+    public static void updateMaxFitness() {
+
+        double currMax = getMaxFitnessDNA().fitness;
+
+        if(currMax > maxFitness) {
+            maxFitness = currMax;
+            CrossOver.stagnantGenerations = 0;
+        }
+        else {
+            CrossOver.stagnantGenerations++;
+        }
+
     }
     
 

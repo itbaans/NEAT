@@ -5,11 +5,14 @@ import TheGame.GameConstants;
 
 public class AlotOfConstants {
 
-    public static int popSize = 30;
+    public static int popSize = 200;
     public static int inputs = 23;
     public static int outputs = 3;
+    public static int generations = 200;
 
-    public static boolean isUNIFORM = false;
+    public static double goodFitnessThreshold = 1000;
+
+    public static boolean isUNIFORM = true;
     public static double MAX_UNIFORM_CHANGE = 0.05;
     public static double MIN_UNIFORM_CHANGE = -0.05;
     public static double GUASIAN_MEAN = 0;
@@ -39,12 +42,17 @@ public class AlotOfConstants {
     public static double probChangeWieght = 0.15;
     public static double probChangeBias = 0.15;
 
+    public static int spMaturity = 10;
+
+    public static float crossSpRate = 0.2f;
+
     public static float weightsMutationRate = 0.8f;
     public static float weightsResetRate = 0.1f;
     //public static float weightsLearningRate = 0.1f;
 
     public static int maxNetworkSize = 10;
-    public static double percToKill = 0.5;
+    public static double maxKill = 0.5;
+    public static double minKill = 0.3;
 
     private static final double ADJUSTMENT_RATE = 0.02; // How quickly probabilities change
     private static final double MIN_PROB = 0.05; // Minimum probability for any operation
@@ -52,8 +60,8 @@ public class AlotOfConstants {
 
     private static final double MIN_THRESHOLD = 1.5;
     private static final double MAX_THRESHOLD = 3.0;
-    private static final double SP_ADJUSTMENT_RATE = 0.2;
-    private static final int TARGET_SPECIES = 5;
+    private static final double SP_ADJUSTMENT_RATE = 0.1;
+    private static final int TARGET_SPECIES = 8;
 
     public static void updateProbabilities(double currentAverageFitness) {
         double fitnessChange = currentAverageFitness - lastAverageFitness;

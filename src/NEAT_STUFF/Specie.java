@@ -7,6 +7,7 @@ import NeuralNetwork.DNA;
 public class Specie {
 
     List<DNA> list = new ArrayList<>();
+    int age = 0;
     
     public DNA getRepresentative() {
         return representative;
