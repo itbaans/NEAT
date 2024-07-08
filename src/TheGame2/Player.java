@@ -90,13 +90,17 @@ public class Player {
         p1.setLocation(p1.getX() + pos.getX(), p1.getY() + pos.getY());
         p2.setLocation(p2.getX() + pos.getX(), p2.getY() + pos.getY());
         p3.setLocation(p3.getX() + pos.getX(), p3.getY() + pos.getY());
+
+        return touchesTile(Vector2D.of(p1.getX(), p1.getY()), Vector2D.of(p2.getX(), p2.getY()), tileX, tileY, size) ||
+        touchesTile(Vector2D.of(p1.getX(), p1.getY()), Vector2D.of(p3.getX(), p3.getY()), tileX, tileY, size) ||
+        touchesTile(Vector2D.of(p3.getX(), p3.getY()), Vector2D.of(p2.getX(), p2.getY()), tileX, tileY, size);
     
-        for(int i = tileX; i < tileX + size; i++) {
-            for(int j = tileY; j < tileY + size; j++) {
-                if(isPointInTriangle(new Point2D.Double(i, j), p1, p2, p3)) return true;            
-            }
-        }
-        return false;
+        // for(int i = tileX; i < tileX + size; i++) {
+        //     for(int j = tileY; j < tileY + size; j++) {
+        //         if(isPointInTriangle(new Point2D.Double(i, j), p1, p2, p3)) return true;            
+        //     }
+        // }
+        // return false;
     }
     
     private Point2D getRotatedPoint(double x, double y, double angle) {

@@ -25,6 +25,8 @@ public class MapGenerator {
     boolean[][] theMap;
     Tile[][] tiles;
 
+    ArrayList<Tile> edgeTiles = new ArrayList<>();
+
     public MapGenerator() {
 
         height = GameConstants.height;
@@ -89,6 +91,8 @@ public class MapGenerator {
         }
 
         tiles = getMapArray();
+        edgeTiles.clear();
+        updateEdgeTiles();
 
     }
     
@@ -174,6 +178,37 @@ public class MapGenerator {
 
     }
 
+    private void updateEdgeTiles() {
+
+        for(int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if(!theMap[i][j]) {
+                    if(checkIfNeighborFloor(i, j)) edgeTiles.add(tiles[i][j]);
+                }
+            }
+        }
+
+
+    }
+
+    private boolean checkIfNeighborFloor(int r, int c) {
+
+        for(int i = r - 1; i <= r + 1; i++) {
+
+            for (int j = c - 1; j <= c + 1; j++) {
+
+                if(i >= 0 && j >= 0 && i < height && j < width) {
+
+                    if(theMap[i][j] && (i != r || j != c)) return true;
+
+                }           
+            }
+        }
+
+        return false;
+    }
+
+
     private void generateNoiseGrid() {
 
         double rand = Math.random();
@@ -200,8 +235,13 @@ public class MapGenerator {
             }
         }
 
-        g.setColor(Color.red);
-        g.fillRect(start.x * tileSize, start.y * tileSize, tileSize * goalArea, tileSize * goalArea);
+        // for(Tile t : edgeTiles) {
+        //     t.setColor(Color.RED);
+        //     t.draw(g);
+        // }
+
+        // g.setColor(Color.red);
+        // g.fillRect(start.x * tileSize, start.y * tileSize, tileSize * goalArea, tileSize * goalArea);
 
         // g.setColor(Color.red);
         // g.drawRect(0 * tileSize, 0 * tileSize, tileSize * 2, tileSize * 2);

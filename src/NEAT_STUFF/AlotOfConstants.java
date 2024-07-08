@@ -67,7 +67,7 @@ public class AlotOfConstants {
         double fitnessChange = currentAverageFitness - lastAverageFitness;
         lastAverageFitness = currentAverageFitness;
 
-        if(BotServival.currentGen / GameConstants.generations < 0.5 && Population.getAvgFitness() < 1000) {
+        if(Population.currentGen / generations < 0.5 && Population.getAvgFitness() < 1000) {
             adjustProbabilities(false);
         }
 

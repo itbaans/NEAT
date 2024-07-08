@@ -208,6 +208,8 @@ public class Mutation {
 
         dna.n_genes.add(newNode);
 
+        //System.out.println("new node added");
+
         Collections.sort(dna.n_genes);
         Population.resetNodes(dna.n_genes);
         return true;

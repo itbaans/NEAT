@@ -10,7 +10,7 @@ public class DrawingExample extends JPanel {
     public DrawingExample() {
         // Set preferred size for the panel
         this.setPreferredSize(new Dimension(800, 800));
-        // map = new MapGenerator(80, 80, 7, 4, 0.52f);
+        map = new MapGenerator();
         // map.generateMap();
     }
 

@@ -14,12 +14,12 @@ import NeuralNetwork.Node_N;
 
 public class CrossOver {
 
-    private static int currentStage;
+    private static int currentStage = 1;
     static int stagnantGenerations;
     static Random rand = new Random();
 
-    private static float sizeWeight = 2;
-    private static float fitnessWeight = 1.5f;
+    private static float sizeWeight = 1.5f;
+    private static float fitnessWeight = 2f;
 
     public static void theRealEvolution() {
 
@@ -59,8 +59,8 @@ public class CrossOver {
     }
     private static void stageThreeEvolution() {
 
-        sizeWeight = 1.5f;
-        fitnessWeight = 2.5f;
+        sizeWeight = 1f;
+        fitnessWeight = 3f;
         AlotOfConstants.crossSpRate = 0.08f;
         
         theKillingSpree();
@@ -100,7 +100,7 @@ public class CrossOver {
             addingPossibilities[i] = calculateAdditionProbability(Population.species.get(keys[i]), totalSpecFitn);
         }
 
-        int maxKills = (int)(rand.nextDouble(AlotOfConstants.minKill, AlotOfConstants.maxKill)) * AlotOfConstants.popSize;
+        int maxKills = (int)((rand.nextDouble(AlotOfConstants.minKill, AlotOfConstants.maxKill)) * AlotOfConstants.popSize);
 
         int actualKills = 0;
 

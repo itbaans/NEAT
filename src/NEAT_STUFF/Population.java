@@ -111,6 +111,7 @@ public class Population {
     public static void evolve() throws CloneNotSupportedException {
 
         Speciation.printSpecies();
+        printMaxFitnessDNA();
         Speciation.updateSpeciesAvgFitness();
 
         AlotOfConstants.updateProbabilities(getAvgFitness());
@@ -122,8 +123,7 @@ public class Population {
         currentGen++;
         updateSpecieAges();
         updatePopulation();
-        
-        printMaxFitnessDNA();
+
     }
 
     private static void updatePopulation() {

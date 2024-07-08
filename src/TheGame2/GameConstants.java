@@ -3,7 +3,7 @@ package TheGame2;
 public class GameConstants {
 
     //map constants
-    static int height = 60;
+    static int height =60;
     static int width = 60;
     static int iterations = 7; 
     static int birthRate = 4;
