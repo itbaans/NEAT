@@ -9,6 +9,8 @@ public class DNA implements Comparable<DNA> {
         return fitness;
     }
 
+    public String mutation = "Pure";
+
     public void setFitness(double fitness) {
         this.fitness = fitness;
     }

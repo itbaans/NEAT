@@ -428,27 +428,35 @@ public class Mutation {
 
             case 0:
                 mutateWithBiases(dna);
+                dna.mutation = "bias";
                 break;
 
             case 1: 
-                mutateWithWeights(dna);             
+                mutateWithWeights(dna);
+                dna.mutation = "wieghts";             
                 break;
                 
             case 2: //new conn         
-                mutateWithConnection(dna);            
+                mutateWithConnection(dna); 
+                dna.mutation = "new conn";           
                 break;
     
             case 3: //new node
-                if(mutateWithNewNode(dna));
-                else mutateWithWeights(dna);
+                if(mutateWithNewNode(dna)) dna.mutation = "new node";
+                else{
+                    mutateWithWeights(dna);
+                    dna.mutation = "wieghts";
+                 } 
                 break;
     
             case 4: //remove conn
                 mutateWithRemoveConnection(dna);
+                dna.mutation = "rem conn";
                 break;
     
             case 5: //remove node
                 mutateWithRemoveNode(dna);
+                dna.mutation = "rem node";
             }
 
     }

@@ -14,12 +14,12 @@ import NeuralNetwork.Node_N;
 
 public class CrossOver {
 
-    private static int currentStage = 1;
+    private static int currentStage = 2;
     static int stagnantGenerations;
     static Random rand = new Random();
 
-    private static float sizeWeight = 1.5f;
-    private static float fitnessWeight = 2f;
+    private static float sizeWeight = 2f;
+    private static float fitnessWeight = 1f;
 
     public static void theRealEvolution() {
 
@@ -44,11 +44,15 @@ public class CrossOver {
 
         Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
 
+        //System.out.println("IN");
+
         for(Integer k : keys) {
 
             freeEvolution(Population.species.get(k));
 
         }
+
+        //System.out.println("OUT");
 
     }
 
@@ -67,12 +71,11 @@ public class CrossOver {
 
     }
 
-
     private static void checkStageTransition() {
-        if (currentStage == 1 && (Population.currentGen > 50 || stagnantGenerations > 10)) {
+        if (currentStage == 1 && (Population.currentGen > (0.25 * AlotOfConstants.generations) || stagnantGenerations > 30)) {
             currentStage = 2;
             System.out.println("Transitioning to Stage 2");
-        } else if (currentStage == 2 && (Population.currentGen > 150 || stagnantGenerations > 20)) {
+        } else if (currentStage == 2 && (Population.currentGen > (0.75 * AlotOfConstants.generations) || stagnantGenerations > 50)) {
             currentStage = 3;
             System.out.println("Transitioning to Stage 3");
         }
@@ -80,9 +83,31 @@ public class CrossOver {
 
     private static void theKillingSpree() {
 
-        Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
+        double[] elimationPossibilities = getSpecieElimPoss();
+
+        int maxKills = (int)((rand.nextDouble(AlotOfConstants.minKill, AlotOfConstants.maxKill)) * AlotOfConstants.popSize);
+
+        int actualKills = 0;
+
+        for(int i = 0; i < maxKills; i++) {
+
+            int selected = Statistics.theCollectionPikcerGetInd(elimationPossibilities, false);
+            Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
+            if(killMember(Population.species.get(keys[selected]), keys[selected])) actualKills++;
+
+            elimationPossibilities = getSpecieElimPoss();  
+
+        }
+
+        theReproduction(getSpecieAddPoss(), actualKills);
+
+    }
+
+    private static double[] getSpecieElimPoss() {
 
         Speciation.updateSpeciesAvgFitness();
+
+        Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
 
         double totalSpecFitn = 0;
         for(int i = 0; i < keys.length; i++) {
@@ -95,24 +120,27 @@ public class CrossOver {
             elimationPossibilities[i] = calculateEliminationProbability(Population.species.get(keys[i]), totalSpecFitn);
         }
 
+        return elimationPossibilities;
+    }
+
+    private static double[] getSpecieAddPoss() {
+
+        Speciation.updateSpeciesAvgFitness();
+
+        Integer[] keys = Population.species.keySet().toArray(new Integer[0]);
+
+        double totalSpecFitn = 0;
+        for(int i = 0; i < keys.length; i++) {
+            totalSpecFitn += Population.species.get(keys[i]).getAvgFitness();
+        }
+
         double[] addingPossibilities = new double[keys.length];
-        for(int i = 0; i < elimationPossibilities.length; i++) {
+
+        for(int i = 0; i < addingPossibilities.length; i++) {
             addingPossibilities[i] = calculateAdditionProbability(Population.species.get(keys[i]), totalSpecFitn);
         }
 
-        int maxKills = (int)((rand.nextDouble(AlotOfConstants.minKill, AlotOfConstants.maxKill)) * AlotOfConstants.popSize);
-
-        int actualKills = 0;
-
-        for(int i = 0; i < maxKills; i++) {
-
-            int selected = Statistics.theCollectionPikcerGetInd(elimationPossibilities, false);
-            if(killMember(Population.species.get(selected), selected)) actualKills++;
-
-        }
-
-        theReproduction(addingPossibilities, actualKills);
-
+        return addingPossibilities;
     }
 
     private static void crossOfDiffSpecies(Specie s1, Specie s2) {
@@ -138,20 +166,18 @@ public class CrossOver {
 
         for(int i = 0; i < toAdd; i++) {
 
-            if(Math.random() > AlotOfConstants.crossSpRate) {
-                int selected = Statistics.theCollectionPikcerGetInd(possiblities, false);
+            int selected = Statistics.theCollectionPikcerGetInd(possiblities, false);
             
-                if(Population.species.get(selected) != null) {
-                    addMember(Population.species.get(selected));
-                }
-                else {
-                    int k = rand.nextInt(keys.length);
-                    addMember(Population.species.get(keys[k]));
-                }
-            }
-            else {
-                crossOfDiffSpecies(Population.species.get(keys[rand.nextInt(keys.length)]), Population.species.get(keys[rand.nextInt(keys.length)]));
-            }
+            addMember(Population.species.get(keys[selected]));
+
+            // if(Math.random() > AlotOfConstants.crossSpRate) {
+            //     int selected = Statistics.theCollectionPikcerGetInd(possiblities, false);
+            
+            //     addMember(Population.species.get(keys[selected]));
+            // }
+            // else {
+            //     crossOfDiffSpecies(Population.species.get(keys[rand.nextInt(keys.length)]), Population.species.get(keys[rand.nextInt(keys.length)]));
+            // }
 
         }
 
@@ -201,7 +227,10 @@ public class CrossOver {
         DNA child;
         try {
             child = actualCrossOver(p1, p2);
+            //System.out.println("STUCK IN MUTATING STAGE: "+currentStage);
             Mutation.pickOneOfMutation(child);
+            //System.out.println("NOT STUCK IN MUTATING STAGE: "+currentStage);
+
             Speciation.putInSpecieByRepresentative(child);
         } catch (CloneNotSupportedException e) {
             // TODO Auto-generated catch block
@@ -236,13 +265,16 @@ public class CrossOver {
         }
 
         for (int i = 0; i < s.list.size(); i++) {
+            
             DNA p1 = getContender(possiblities, s.list);
             DNA p2 = getContender(possiblities, s.list);
 
             try {
                 DNA child = actualCrossOver(p1, p2);
+                //System.out.println("STUCK IN MUTATING STAGE: "+currentStage);
                 Mutation.pickOneOfMutation(child);
-                if(Speciation.calculateCompatibilityDistance(child, s.getRepresentative()) <= AlotOfConstants.COMP_THRSHOLD)
+                //System.out.println("NOT STUCK IN MUTATING STAGE: "+currentStage);
+                if(Speciation.calculateCompatibilityDistance(child, s.getRepresentative()) < AlotOfConstants.COMP_THRSHOLD)
                     childs.add(child);
                 else {
                     Speciation.putInSpecieByRepresentative(child);

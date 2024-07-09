@@ -22,7 +22,7 @@ public class BotServival extends JPanel implements KeyListener {
     
     private static final int WIDTH = GameConstants.width * GameConstants.tileSize;
     private static final int HEIGHT = GameConstants.height * GameConstants.tileSize;
-    private static final int DELAY = 5; // milliseconds
+    private static final int DELAY = 1; // milliseconds
     private MapGenerator map = new MapGenerator();
     boolean goalReached;
     boolean collided;
@@ -70,11 +70,13 @@ public class BotServival extends JPanel implements KeyListener {
 
     private void trainingLoop() {
 
+        //System.out.println("STUCK IN SETTING UP BRAINS");
         setPlayerBrains(Population.getPopulationDNAs());
-
+        System.out.println(players.length);
         while(Population.currentGen <= AlotOfConstants.generations) {
 
             System.out.println("Current Gen: "+Population.currentGen);
+            //repaint();
 
             while(true) {
 
@@ -89,7 +91,7 @@ public class BotServival extends JPanel implements KeyListener {
                     }
                 }
 
-                if(Population.currentGen != 0 && Population.currentGen % 10 == 0) {
+                if(Population.currentGen % 10 == 0) {
                     repaint();
 
                     try {
@@ -218,6 +220,9 @@ public class BotServival extends JPanel implements KeyListener {
         inps.add(temp[1]);
         inps.add(players[ind].pos.distance(Vector2D.of(map.goal.x * GameConstants.tileSize, map.goal.y * GameConstants.tileSize)));
 
+        inps.add(players[ind].pos.normalize().getX());
+        inps.add(players[ind].pos.normalize().getY());
+
         double[] inputs = inps.stream().mapToDouble(Double::doubleValue).toArray();
 
         // for(double d : inputs) {
@@ -307,7 +312,7 @@ public class BotServival extends JPanel implements KeyListener {
                     double[] objectNDist = new double[2];
                     objectNDist[0] = -100;
                     objectNDist[1] = players[ind].pos.distance(Vector2D.of(t.pos.x, t.pos.y));
-                    stuffImSeing.add(objectNDist);
+                    stuffImSeing.add(objectNDist);                    
                 }
             }
             
@@ -316,8 +321,8 @@ public class BotServival extends JPanel implements KeyListener {
                 if(obd[1] < min[1]) min = obd;
             }
 
-            players[ind].whatTracersSee[0][i] = min[0];
-            players[ind].whatTracersSee[1][i] = min[1];
+            players[currentPlayer].whatTracersSee[0][i] = min[0];
+            players[currentPlayer].whatTracersSee[1][i] = min[1];
 
         }
 
@@ -331,7 +336,7 @@ public class BotServival extends JPanel implements KeyListener {
         drawMap(g);
         // players[currentPlayer].draw((Graphics2D) g);
         // players[currentPlayer].drawVisionRange((Graphics2D) g);
-        for(int i = 0; i < noOfPlayers; i++) {
+        for(int i = 0; i < players.length; i++) {
             if(players[i].isAlive()) {
                 players[i].draw((Graphics2D) g);
                 //players[i].drawVisionRange((Graphics2D) g);

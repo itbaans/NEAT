@@ -50,17 +50,18 @@ public class Population {
 
         //NueralNetwork[] NNs = new NueralNetwork[populationSize];
 
-        int generations = 0;
+        //int generations = 0;
         double[][] xor_inputs = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.}, {1.0, 1.0}};
         double[][] xor_outputs = {{0}, {1}, {1}, {0}};
 
-        while(generations < 300) {
+        while(currentGen < AlotOfConstants.generations || maxFitness < 3.99999) {
             //              
             //eval
             for(int i = 0; i < populationDNAs.length; i++) {
     
                 populationDNAs[i].fitness = 4;
                 resetNodes(populationDNAs[i].n_genes);
+
                 NueralNetwork nn = new NueralNetwork(populationDNAs[i]);
                 
                 for(int j = 0; j < xor_inputs.length; j++) {
@@ -74,17 +75,20 @@ public class Population {
             }
 
             //System.out.println("ff");
-            Speciation.updateSpeciesAvgFitness();
+            //Speciation.updateSpeciesAvgFitness();
             //Speciation.printSpecies();
             
             evolve();
             //printDNAfitnesses();
-            printMaxFitnessDNA();
-            System.out.println("generation: "+generations);
+            //printMaxFitnessDNA();
+            // System.out.println("generation: "+generations);
             
-            generations++;
+            // generations++;
+            //break;
 
         }
+
+        System.out.println("GENS: "+currentGen);
 
         resetNodes(getMaxFitnessDNA().n_genes);
         NueralNetwork nn = new NueralNetwork(getMaxFitnessDNA());
@@ -112,17 +116,26 @@ public class Population {
 
         Speciation.printSpecies();
         printMaxFitnessDNA();
+
         Speciation.updateSpeciesAvgFitness();
 
         AlotOfConstants.updateProbabilities(getAvgFitness());
 
+        //System.out.println("STUCK IN EVOLVING");
         CrossOver.theRealEvolution();
+        
+        
         
         AlotOfConstants.adjustSpeciationThreshold(species.size());
 
         currentGen++;
         updateSpecieAges();
         updatePopulation();
+
+        for(int i = 0; i < populationSize; i++) {
+            resetNodes(populationDNAs[i].n_genes);
+        }
+        //System.out.println(" NOT STUCK IN EVOLVING");
 
     }
 
@@ -165,10 +178,10 @@ public class Population {
 
     public static void printMaxFitnessDNA() {
 
-        double max = Double.MIN_VALUE;
+        double max = 0;
         DNA d = null;
         for(DNA dna : populationDNAs) {
-            if(dna.getFitness() > max) {
+            if(dna.getFitness() >= max) {
                 max = dna.getFitness();
                 d = dna;
             }
@@ -193,9 +206,9 @@ public class Population {
     public static DNA getMaxFitnessDNA() {
 
         DNA d = null;
-        double max = Double.MIN_VALUE;
+        double max = 0;
         for(DNA dna : populationDNAs) {
-            if(dna.getFitness() > max) {
+            if(dna.getFitness() >= max) {
                 max = dna.getFitness();
                 d = dna;
             }

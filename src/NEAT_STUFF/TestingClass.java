@@ -5,14 +5,10 @@ import NeuralNetwork.NueralNetwork;
 
 public class TestingClass {
 
-    public static void main(String[] args) throws CloneNotSupportedException {
+    public static void main(String[] args) throws CloneNotSupportedException {      
         
-        
-        Population p = new Population(150, 2, 1);
-        
+        Population p = new Population(AlotOfConstants.popSize, AlotOfConstants.inputs, AlotOfConstants.outputs);   
         p.XORtest();
-
-
 
     }
     

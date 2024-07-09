@@ -6,8 +6,8 @@ import TheGame.GameConstants;
 public class AlotOfConstants {
 
     public static int popSize = 200;
-    public static int inputs = 23;
-    public static int outputs = 3;
+    public static int inputs = 5;
+    public static int outputs = 2;
     public static int generations = 200;
 
     public static double goodFitnessThreshold = 1000;
@@ -29,11 +29,11 @@ public class AlotOfConstants {
 
     //clamping values depends on activation function according to GPT
     //need more research on this.......
-    public static double MAX_CLAMP_VALUE = 30;
-    public static double MIN_CLAMP_VALUE = -30;
+    public static double MAX_CLAMP_VALUE = -30;
+    public static double MIN_CLAMP_VALUE = 30;
 
-    public static double MAX_BIAS = 15;
-    public static double MIN_BIAS = -15;
+    public static double MAX_BIAS = 30;
+    public static double MIN_BIAS = -30;
 
     public static double probNewNode = 0.2;
     public static double probRemoveNode = 0.2;
@@ -42,7 +42,7 @@ public class AlotOfConstants {
     public static double probChangeWieght = 0.15;
     public static double probChangeBias = 0.15;
 
-    public static int spMaturity = 10;
+    public static int spMaturity = 0;
 
     public static float crossSpRate = 0.2f;
 
@@ -50,7 +50,7 @@ public class AlotOfConstants {
     public static float weightsResetRate = 0.1f;
     //public static float weightsLearningRate = 0.1f;
 
-    public static int maxNetworkSize = 10;
+    public static int maxNetworkSize = 5;
     public static double maxKill = 0.5;
     public static double minKill = 0.3;
 

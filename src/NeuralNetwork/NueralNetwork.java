@@ -71,7 +71,11 @@ public class NueralNetwork {
 
     public void decodeGenses() {
 
-        //System.out.println("here");
+        // System.out.println("here");
+        // System.out.println(myDNA.mutation);
+
+        // myDNA.printDNA();
+        // myDNA.printDNA_n();
 
         layers.clear();
 
